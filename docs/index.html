@@ -754,7 +754,7 @@
           <button class="nav-button" data-view="input"><span>＋</span><span>日報入力</span><span class="badge">登録</span></button>
           <button class="nav-button" data-view="current"><span>⌕</span><span>現在設置</span><span class="badge" id="navCurrentCount">0</span></button>
           <button class="nav-button" data-view="database"><span>DB</span><span>データベース検索</span><span class="badge" id="navDatabaseCount">0</span></button>
-          <button class="nav-button" data-view="alerts"><span>!</span><span>長期設置アラート</span><span class="badge red" id="navAlertCount">0</span></button>
+          <button class="nav-button" data-view="alerts"><span>!</span><span>長期未回収</span><span class="badge red" id="navAlertCount">0</span></button>
           <button class="nav-button" data-view="reports"><span>▤</span><span>帳票プレビュー</span><span class="badge">印刷</span></button>
         </div>
 
@@ -782,7 +782,7 @@
         <section class="view active" id="dashboardView">
           <div class="grid stats">
             <div class="panel stat"><p>現在設置中</p><strong id="statActive">0件</strong><span>コンテナ・カゴの合計</span></div>
-            <div class="panel stat red"><p>長期設置</p><strong id="statLong">0件</strong><span>90日以上を自動抽出</span></div>
+            <div class="panel stat red"><p>長期未回収</p><strong id="statLong">0件</strong><span>1年以上を別シート管理</span></div>
             <div class="panel stat green"><p>本日の入力</p><strong id="statToday">0件</strong><span>日報から登録済み</span></div>
             <div class="panel stat yellow"><p>ミス防止</p><strong>自動</strong><span>二重設置・別会社回収を確認</span></div>
           </div>
@@ -798,7 +798,7 @@
               <article class="flow-step done"><b>1</b><h3>紙に記入</h3><p>ドライバーさんは今まで通り作業日報へ記入。</p></article>
               <article class="flow-step done"><b>2</b><h3>必要項目だけ入力</h3><p>事務員さんが会社名・番号・作業内容だけ登録。</p></article>
               <article class="flow-step done"><b>3</b><h3>現在設置を更新</h3><p>回収済み、設置中、交換を自動で反映。</p></article>
-              <article class="flow-step alert"><b>4</b><h3>長期設置を通知</h3><p>3ヶ月以上などの条件で自動抽出。</p></article>
+              <article class="flow-step alert"><b>4</b><h3>長期未回収を分離</h3><p>設置から1年以上は専用シートで管理。</p></article>
               <article class="flow-step done"><b>5</b><h3>帳票を出力</h3><p>必要な時だけ印刷・CSV保存。</p></article>
             </div>
           </div>
@@ -911,18 +911,24 @@
               <label>コンテナ番号<input id="databaseContainer" placeholder="例：206番、カゴ" /></label>
             </div>
             <div class="grid stats" style="margin-top: 14px;">
-              <div class="panel stat"><p>コンテナ管理表</p><strong id="dbContainerCount">0件</strong><span>設置・回収履歴</span></div>
+              <div class="panel stat"><p>通常コンテナ管理表</p><strong id="dbContainerCount">0件</strong><span>設置から1年未満・回収済み</span></div>
               <div class="panel stat green"><p>収集履歴</p><strong id="dbHistoryCount">0件</strong><span>作業日報の履歴</span></div>
               <div class="panel stat yellow"><p>検索対象会社</p><strong id="dbCompanyCount">0社</strong><span>搬出事業者名</span></div>
-              <div class="panel stat red"><p>未回収</p><strong id="dbOpenCount">0件</strong><span>回収日が空欄</span></div>
+              <div class="panel stat red"><p>長期未回収</p><strong id="dbOpenCount">0件</strong><span>設置から1年以上</span></div>
+            </div>
+            <div class="action-row" style="margin-top: 14px;">
+              <button class="primary" id="printNormalSheets" type="button">通常管理 PDF/印刷</button>
+              <button class="secondary" id="csvNormalSheets" type="button">通常管理 Excel</button>
+              <button class="danger-button" id="printLongSheet" type="button">長期未回収 PDF/印刷</button>
+              <button class="secondary" id="csvLongSheet" type="button">長期未回収 Excel</button>
             </div>
           </div>
 
           <div class="panel">
             <div class="panel-title">
               <div>
-                <h3>コンテナ管理表</h3>
-                <p class="hint">コンテナ番号・NO・設置日・回収日・搬出事業者名・現場名で管理します。</p>
+                <h3>コンテナ管理表（通常管理）</h3>
+                <p class="hint">設置から1年未満、または回収済みのデータを通常管理します。</p>
               </div>
             </div>
             <div class="table-wrap">
@@ -938,6 +944,32 @@
                   </tr>
                 </thead>
                 <tbody id="databaseContainerRows"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <h3>長期未回収管理シート</h3>
+                <p class="hint">設置日から1年以上経過して、まだ回収日が入っていないコンテナだけを別管理します。</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>優先</th>
+                    <th>コンテナ番号</th>
+                    <th>NO</th>
+                    <th>設置日</th>
+                    <th>経過日数</th>
+                    <th>搬出事業者名</th>
+                    <th>現場名</th>
+                    <th>備考</th>
+                  </tr>
+                </thead>
+                <tbody id="databaseLongRows"></tbody>
               </table>
             </div>
           </div>
@@ -1004,8 +1036,8 @@
           <div class="panel">
             <div class="panel-title">
               <div>
-                <h3>長期設置コンテナアラート</h3>
-                <p class="hint">サビ・腐食対策として、設置期間が長い順に表示します。</p>
+                <h3>長期未回収管理</h3>
+                <p class="hint">設置から1年以上経過して未回収のものを、通常管理とは別に表示します。</p>
               </div>
             </div>
             <div class="grid stats" id="thresholdStats"></div>
@@ -1072,9 +1104,7 @@
 
       const defaults = {
         thresholds: [
-          { id: 'three-months', label: '3ヶ月以上', days: 90 },
-          { id: 'six-months', label: '6ヶ月以上', days: 180 },
-          { id: 'one-year', label: '1年以上', days: 365 }
+          { id: 'one-year', label: '1年以上未回収', days: 365 }
         ],
         assignments: [
           { id: 'assign-408-old', assetId: 'container-408', assetLabel: '408番', assetType: 'コンテナ', sizeLabel: '2.5m3', companyName: '○○建設', siteName: '同左', installedOn: '2026-07-01', collectedOn: '2026-08-21', quantity: '1基', disposalSite: '友政' },
@@ -1084,17 +1114,19 @@
           { id: 'assign-210', assetId: 'container-210', assetLabel: '210番', assetType: 'コンテナ', sizeLabel: '5.5m3', companyName: 'ダイワプラスモア', siteName: '北関東営業所', installedOn: '2026-07-18', quantity: '1基', disposalSite: '友政' },
           { id: 'assign-206', assetId: 'container-206', assetLabel: '206番', assetType: 'コンテナ', sizeLabel: '6m3', companyName: '大橋技建', siteName: 'ハウス食品', installedOn: '2026-02-12', quantity: '1基', disposalSite: '友政' },
           { id: 'assign-215', assetId: 'container-215', assetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', companyName: '開発株式会社', siteName: '栃木市 大橋邸', installedOn: '2026-03-05', quantity: '1基', disposalSite: '友政' },
+          { id: 'assign-223-long', assetId: 'container-223', assetLabel: '223番', assetType: 'コンテナ', sizeLabel: '4.5m3', companyName: '高山建築', siteName: '日光市 工藤邸', installedOn: '2025-05-20', quantity: '1基', disposalSite: '友政', note: '1年以上未回収の見本' },
           { id: 'assign-basket-flex', assetId: 'basket-flex', assetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', companyName: '市村板金', siteName: '事務所', installedOn: '2026-07-27', quantity: '2袋', disposalSite: '友政' }
         ],
         reports: [
           { id: 'report-001', workDate: '2026-08-21', companyName: '○○建設', siteName: '同左', driverName: '2t車', workType: '交換', installAssetId: 'container-oki-1', installAssetLabel: '置1番', collectAssetId: 'container-408', collectAssetLabel: '408番', assetType: 'コンテナ', sizeLabel: '2.5m3', quantity: '1基', disposalSite: '友政', note: '紙日報から登録した見本' },
           { id: 'report-002', workDate: '2026-07-29', companyName: '菜穂電気', siteName: '作業場', driverName: '菜穂さん', workType: '交換', installAssetId: 'container-210', installAssetLabel: '210番', collectAssetId: 'container-215', collectAssetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', quantity: '1基', disposalSite: '友政' },
           { id: 'report-003', workDate: '2026-07-27', companyName: '市村板金', siteName: '事務所', driverName: '2t車', workType: '設置', installAssetId: 'basket-flex', installAssetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', quantity: '2袋', disposalSite: '友政' },
-          { id: 'report-004', workDate: '2026-03-05', companyName: '開発株式会社', siteName: '栃木市 大橋邸', driverName: '4t車', workType: '設置', installAssetId: 'container-215', installAssetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', quantity: '1基', disposalSite: '友政' }
+          { id: 'report-004', workDate: '2026-03-05', companyName: '開発株式会社', siteName: '栃木市 大橋邸', driverName: '4t車', workType: '設置', installAssetId: 'container-215', installAssetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', quantity: '1基', disposalSite: '友政' },
+          { id: 'report-005', workDate: '2025-05-20', companyName: '高山建築', siteName: '日光市 工藤邸', driverName: '4t車', workType: '設置', installAssetId: 'container-223', installAssetLabel: '223番', assetType: 'コンテナ', sizeLabel: '4.5m3', quantity: '1基', disposalSite: '友政', note: '長期未回収管理シートへ移動する見本' }
         ]
       };
 
-      const storeKey = 'container-manager-demo-v3';
+      const storeKey = 'container-manager-demo-v4';
       const $ = (id) => document.getElementById(id);
       const todayIso = () => new Date().toISOString().slice(0, 10);
       const normalize = (text) => String(text || '').trim().toLowerCase().replace(/\s/g, '');
@@ -1170,6 +1202,8 @@
             companyName: report.companyName,
             siteName: report.siteName,
             vehicleName: report.driverName || '',
+            installAssetLabel: report.installAssetLabel || '',
+            collectAssetLabel: report.collectAssetLabel || '',
             containerText: containerDateText(report),
             itemText: `${report.sizeLabel} ${report.assetType} / ${report.quantity} / ${report.disposalSite || '未入力'}`,
             note: report.note || '',
@@ -1205,6 +1239,81 @@
           (!filters.container || container.includes(filters.container));
       }
 
+      function isLongUncollected(row) {
+        return !row.collectedOn && daysFrom(row.installedOn) >= 365;
+      }
+
+      function tableHtml(title, headers, rows) {
+        const head = headers.map((header) => `<th>${header}</th>`).join('');
+        const body = rows.length
+          ? rows.map((row) => `<tr>${row.map((cell) => `<td>${cell || ''}</td>`).join('')}</tr>`).join('')
+          : `<tr><td colspan="${headers.length}">該当データはありません。</td></tr>`;
+        return `<section><h2>${title}</h2><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></section>`;
+      }
+
+      function printSheets(title, sections) {
+        const html = `
+          <!doctype html>
+          <html lang="ja">
+            <head>
+              <meta charset="utf-8">
+              <title>${title}</title>
+              <style>
+                body { font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif; color: #111827; }
+                h1 { text-align: center; margin: 0 0 18px; }
+                h2 { margin: 22px 0 10px; font-size: 18px; }
+                table { width: 100%; border-collapse: collapse; page-break-inside: auto; }
+                th, td { border: 1.5px solid #334155; padding: 7px; text-align: left; vertical-align: top; font-size: 11px; }
+                th { background: #eef4ff; }
+                section { page-break-inside: avoid; margin-bottom: 20px; }
+                @media print { button { display: none; } }
+              </style>
+            </head>
+            <body>
+              <button onclick="window.print()">印刷/PDF保存</button>
+              <h1>${title}</h1>
+              ${sections.join('')}
+            </body>
+          </html>
+        `;
+        const win = window.open('', '_blank');
+        win.document.write(html);
+        win.document.close();
+        win.focus();
+      }
+
+      function downloadCsvFile(filename, sections) {
+        const lines = [];
+        sections.forEach((section) => {
+          lines.push(section.title);
+          lines.push(section.headers.join(','));
+          section.rows.forEach((row) => {
+            lines.push(row.map((cell) => `"${String(cell || '').replace(/"/g, '""')}"`).join(','));
+          });
+          lines.push('');
+        });
+        const url = URL.createObjectURL(new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
+
+      function currentDatabaseRows() {
+        const state = getState();
+        const filters = databaseFilters();
+        const allContainerRows = buildContainerDatabase(state).filter((row) => matchesDatabase(row, filters));
+        const normalContainerRows = allContainerRows.filter((row) => !isLongUncollected(row));
+        const longRows = allContainerRows.filter((row) => isLongUncollected(row));
+        const longLabels = new Set(longRows.map((row) => `${row.containerNumber}番`));
+        const historyRows = buildHistoryDatabase(state).filter((row) => {
+          const linkedToLongOpen = longLabels.has(row.installAssetLabel) && !row.collectAssetLabel;
+          return !linkedToLongOpen && matchesDatabase(row, filters);
+        });
+        return { normalContainerRows, longRows, historyRows };
+      }
+
       function showView(name) {
         document.querySelectorAll('.view').forEach((view) => view.classList.remove('active'));
         document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.view === name));
@@ -1214,7 +1323,7 @@
           input: ['日報入力', '紙の日報から必要項目だけ入力し、管理表へ自動反映します。'],
           current: ['現在設置', '会社名またはコンテナ番号で、今どこに何があるか確認します。'],
           database: ['データベース検索', '添付帳票の項目に合わせて、会社名・コンテナ番号で検索します。'],
-          alerts: ['長期設置アラート', '設置期間が長いコンテナを優先順で確認します。'],
+          alerts: ['長期未回収', '設置から1年以上経過して未回収のコンテナを確認します。'],
           reports: ['帳票プレビュー', '現在使っている紙の帳票に近い形で出力します。']
         };
         $('viewTitle').textContent = titleMap[name][0];
@@ -1239,11 +1348,11 @@
         const long = longTermAssignments(state);
         const today = todayIso();
         $('statActive').textContent = `${active.length}件`;
-        $('statLong').textContent = `${long.filter((item) => item.elapsedDays >= 90).length}件`;
+        $('statLong').textContent = `${long.filter((item) => item.elapsedDays >= 365).length}件`;
         $('statToday').textContent = `${state.reports.filter((report) => report.workDate === today).length}件`;
         $('navCurrentCount').textContent = active.length;
         $('navDatabaseCount').textContent = state.assignments.length + state.reports.length;
-        $('navAlertCount').textContent = long.filter((item) => item.elapsedDays >= 90).length;
+        $('navAlertCount').textContent = long.filter((item) => item.elapsedDays >= 365).length;
       }
 
       function renderDashboard(state) {
@@ -1257,7 +1366,7 @@
           </tr>
         `).join('');
 
-        const alerts = longTermAssignments(state).filter((assignment) => assignment.elapsedDays >= 90).slice(0, 4);
+        const alerts = longTermAssignments(state).filter((assignment) => assignment.elapsedDays >= 365).slice(0, 4);
         $('dashboardAlerts').innerHTML = alerts.length
           ? alerts.map((assignment) => `
               <div class="callout">
@@ -1268,7 +1377,7 @@
                 </div>
               </div>
             `).join('')
-          : '<div class="mini-card"><h4>長期設置はありません</h4><p>90日以上の設置コンテナはありません。</p></div>';
+          : '<div class="mini-card"><h4>長期未回収はありません</h4><p>1年以上未回収のコンテナはありません。</p></div>';
       }
 
       function renderCurrent(state) {
@@ -1309,7 +1418,7 @@
       }
 
       function renderAlerts(state) {
-        const long = longTermAssignments(state);
+        const long = longTermAssignments(state).filter((assignment) => assignment.elapsedDays >= 365);
         $('thresholdStats').innerHTML = state.thresholds.map((threshold) => {
           const count = long.filter((assignment) => assignment.elapsedDays >= threshold.days).length;
           return `
@@ -1322,10 +1431,9 @@
         }).join('');
 
         $('longTermRows').innerHTML = long.map((assignment, index) => {
-          const level = assignment.elapsedDays >= 180 ? 'bad' : assignment.elapsedDays >= 90 ? 'warn' : 'ok';
           return `
             <tr>
-              <td><span class="status-pill ${level}">${index + 1}</span></td>
+              <td><span class="status-pill bad">${index + 1}</span></td>
               <td>${assignment.elapsedDays}日</td>
               <td>${assignment.assetLabel}</td>
               <td>${assignment.sizeLabel} ${assignment.assetType}</td>
@@ -1339,13 +1447,19 @@
 
       function renderDatabase(state) {
         const filters = databaseFilters();
-        const containerRows = buildContainerDatabase(state).filter((row) => matchesDatabase(row, filters));
-        const historyRows = buildHistoryDatabase(state).filter((row) => matchesDatabase(row, filters));
-        const companies = new Set([...containerRows, ...historyRows].map((row) => row.companyName));
+        const allContainerRows = buildContainerDatabase(state).filter((row) => matchesDatabase(row, filters));
+        const containerRows = allContainerRows.filter((row) => !isLongUncollected(row));
+        const longRows = allContainerRows.filter((row) => isLongUncollected(row));
+        const longLabels = new Set(longRows.map((row) => `${row.containerNumber}番`));
+        const historyRows = buildHistoryDatabase(state).filter((row) => {
+          const linkedToLongOpen = longLabels.has(row.installAssetLabel) && !row.collectAssetLabel;
+          return !linkedToLongOpen && matchesDatabase(row, filters);
+        });
+        const companies = new Set([...containerRows, ...historyRows, ...longRows].map((row) => row.companyName));
         $('dbContainerCount').textContent = `${containerRows.length}件`;
         $('dbHistoryCount').textContent = `${historyRows.length}件`;
         $('dbCompanyCount').textContent = `${companies.size}社`;
-        $('dbOpenCount').textContent = `${containerRows.filter((row) => !row.collectedOn).length}件`;
+        $('dbOpenCount').textContent = `${longRows.length}件`;
 
         $('databaseContainerRows').innerHTML = containerRows.length
           ? containerRows.map((row) => `
@@ -1359,6 +1473,21 @@
               </tr>
             `).join('')
           : '<tr><td colspan="6">該当するコンテナ管理表データはありません。</td></tr>';
+
+        $('databaseLongRows').innerHTML = longRows.length
+          ? longRows.map((row, index) => `
+              <tr>
+                <td><span class="status-pill bad">${index + 1}</span></td>
+                <td>${row.containerNumber}</td>
+                <td>${row.no}</td>
+                <td>${formatDate(row.installedOn)}</td>
+                <td>${daysFrom(row.installedOn)}日</td>
+                <td>${row.companyName}</td>
+                <td>${row.siteName}</td>
+                <td>1年以上未回収</td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="8">1年以上未回収のデータはありません。</td></tr>';
 
         $('databaseHistoryRows').innerHTML = historyRows.length
           ? historyRows.map((row) => `
@@ -1551,6 +1680,76 @@
         URL.revokeObjectURL(url);
       }
 
+      function normalSheetSections() {
+        const { normalContainerRows, historyRows } = currentDatabaseRows();
+        const containerHeaders = ['コンテナ番号', 'NO', '設置日', '回収日', '搬出事業者名', '現場名'];
+        const historyHeaders = ['搬出事業者名', 'NO', '収集日', '現場名', '運搬車', 'コンテナ番号（設置日・回収日）', '品目、数量（m³）及び搬入先処理場', '備考'];
+        return [
+          {
+            title: 'コンテナ管理表（通常管理：設置1年未満・回収済み）',
+            headers: containerHeaders,
+            rows: normalContainerRows.map((row) => [
+              row.containerNumber,
+              row.no,
+              formatDate(row.installedOn),
+              row.collectedOn ? formatDate(row.collectedOn) : '未回収',
+              row.companyName,
+              row.siteName
+            ])
+          },
+          {
+            title: '収集履歴',
+            headers: historyHeaders,
+            rows: historyRows.map((row) => [
+              row.companyName,
+              row.no,
+              formatDate(row.collectedOn),
+              row.siteName,
+              row.vehicleName,
+              row.containerText,
+              row.itemText,
+              row.note
+            ])
+          }
+        ];
+      }
+
+      function longSheetSection() {
+        const { longRows } = currentDatabaseRows();
+        return {
+          title: '長期未回収管理シート（設置から1年以上）',
+          headers: ['優先', 'コンテナ番号', 'NO', '設置日', '経過日数', '搬出事業者名', '現場名', '備考'],
+          rows: longRows.map((row, index) => [
+            index + 1,
+            row.containerNumber,
+            row.no,
+            formatDate(row.installedOn),
+            `${daysFrom(row.installedOn)}日`,
+            row.companyName,
+            row.siteName,
+            '1年以上未回収'
+          ])
+        };
+      }
+
+      function printNormalSheets() {
+        const sections = normalSheetSections();
+        printSheets('通常管理帳票', sections.map((section) => tableHtml(section.title, section.headers, section.rows)));
+      }
+
+      function printLongSheet() {
+        const section = longSheetSection();
+        printSheets('長期未回収管理シート', [tableHtml(section.title, section.headers, section.rows)]);
+      }
+
+      function downloadNormalSheetsCsv() {
+        downloadCsvFile(`通常管理帳票_${todayIso()}.csv`, normalSheetSections());
+      }
+
+      function downloadLongSheetCsv() {
+        downloadCsvFile(`長期未回収管理シート_${todayIso()}.csv`, [longSheetSection()]);
+      }
+
       document.querySelectorAll('.nav-button').forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
       document.querySelectorAll('[data-jump]').forEach((button) => button.addEventListener('click', () => showView(button.dataset.jump)));
       $('reportForm').addEventListener('submit', submitReport);
@@ -1563,6 +1762,10 @@
       $('databaseKeyword').addEventListener('input', renderAll);
       $('databaseCompany').addEventListener('input', renderAll);
       $('databaseContainer').addEventListener('input', renderAll);
+      $('printNormalSheets').addEventListener('click', printNormalSheets);
+      $('csvNormalSheets').addEventListener('click', downloadNormalSheetsCsv);
+      $('printLongSheet').addEventListener('click', printLongSheet);
+      $('csvLongSheet').addEventListener('click', downloadLongSheetCsv);
       $('printButton').addEventListener('click', () => window.print());
       $('csvButton').addEventListener('click', downloadCsv);
       $('resetButton').addEventListener('click', () => {
