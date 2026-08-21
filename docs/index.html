@@ -57,9 +57,9 @@
 
       .hero-grid {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) 380px;
-        gap: 28px;
-        align-items: end;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
       }
 
       .eyebrow {
@@ -85,29 +85,6 @@
         font-size: 16px;
         font-weight: 700;
         line-height: 1.85;
-      }
-
-      .goal-card {
-        border: 1px solid #bcd1ee;
-        border-radius: 16px;
-        background: linear-gradient(180deg, #f8fbff, #edf5ff);
-        padding: 18px;
-        box-shadow: 0 12px 34px rgba(11, 86, 179, 0.14);
-      }
-
-      .goal-label {
-        margin: 0;
-        color: var(--blue);
-        font-size: 13px;
-        font-weight: 900;
-      }
-
-      .goal-main {
-        margin: 8px 0 0;
-        color: var(--blue-dark);
-        font-size: 34px;
-        font-weight: 950;
-        line-height: 1.1;
       }
 
       .meta-grid {
@@ -703,9 +680,6 @@
           grid-column: auto;
         }
 
-        .goal-main {
-          font-size: 28px;
-        }
       }
 
       @media print {
@@ -755,13 +729,6 @@
             <div class="meta"><span>題材</span><strong>作業日報とコンテナ管理表</strong></div>
             <div class="meta"><span>開発状況</span><strong>操作デモ版</strong></div>
           </div>
-        </div>
-        <div class="goal-card">
-          <p class="goal-label">目標事務作業を</p>
-          <p class="goal-main">1日3時間<br>→ 30分へ</p>
-          <p class="lead" style="margin-top: 12px; font-size: 13px;">
-            同じ内容を何回も書く・転記する作業を、1回入力したら全部に反映する仕組みです。
-          </p>
         </div>
       </div>
     </header>
