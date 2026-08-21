@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>コンテナ管理</title>
+    <style>
+      :root {
+        --bg: #f5f7f8;
+        --surface: #ffffff;
+        --line: #d7e3df;
+        --text: #16302b;
+        --muted: #5d716c;
+        --brand: #0d6b5f;
+        --danger: #cb4e3d;
+        --warn-bg: #fff1f0;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        color: var(--text);
+        background: linear-gradient(180deg, #f8fbfa 0%, #eef4f3 100%);
+        font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
+      }
+
+      header { background: #fff; color: #082b70; }
+
+      .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px; }
+      .eyebrow {
+        display: inline-block;
+        margin: 0 0 12px;
+        border-radius: 999px;
+        background: #064aa3;
+        color: #fff;
+        padding: 8px 22px;
+        font-size: 16px;
+        font-weight: 900;
+        letter-spacing: .04em;
+      }
+      h1 { margin: 0; font-size: clamp(34px, 6vw, 70px); line-height: 1.04; letter-spacing: 0; }
+      .red { color: #d71920; }
+      .lead { max-width: 900px; margin: 14px 0 0; color: #1f2937; line-height: 1.8; font-weight: 800; }
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 420px;
+        gap: 28px;
+        align-items: center;
+      }
+      .hero-icons {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        text-align: center;
+      }
+      .hero-icon {
+        position: relative;
+        display: grid;
+        justify-items: center;
+        gap: 8px;
+        color: #0b4fa8;
+        font-weight: 900;
+      }
+      .circle {
+        display: grid;
+        width: 96px;
+        height: 96px;
+        place-items: center;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #1768c8, #0b3c9a);
+        color: #fff;
+        font-size: 46px;
+        box-shadow: 0 12px 24px rgba(11, 60, 154, .2);
+      }
+      .section-title {
+        display: inline-block;
+        margin: 0 0 14px;
+        border-radius: 14px 14px 14px 0;
+        background: #064aa3;
+        color: #fff;
+        padding: 8px 24px;
+        font-size: 20px;
+        font-weight: 900;
+      }
+      .boxed {
+        border: 1.5px solid #1768c8;
+        border-radius: 8px;
+        background: #fff;
+        padding: 16px;
+      }
+      .flow {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        align-items: stretch;
+      }
+      .flow-card {
+        position: relative;
+        min-height: 210px;
+        border-right: 1px solid #c7d7ef;
+        padding: 12px;
+      }
+      .flow-card:last-child { border-right: 0; }
+      .num {
+        display: inline-grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 999px;
+        background: #064aa3;
+        color: #fff;
+        font-weight: 900;
+      }
+      .flow-card h3 { margin: 0 0 8px; color: #064aa3; font-size: 18px; }
+      .mini-paper, .mini-screen, .mini-db, .mini-print {
+        margin-top: 14px;
+        border: 2px solid #cbd5e1;
+        background: #f8fafc;
+        min-height: 112px;
+      }
+      .mini-paper table { height: 112px; }
+      .mini-paper th, .mini-paper td { border: 1px solid #94a3b8; padding: 4px; font-size: 10px; }
+      .mini-screen { padding: 12px; box-shadow: inset 0 0 0 8px #334155; }
+      .mini-screen div { margin: 5px 0; border: 1px solid #cbd5e1; background: #fff; padding: 4px; font-size: 11px; }
+      .mini-db { display: grid; place-items: center; color: #064aa3; font-size: 52px; }
+      .mini-print { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; place-items: center; padding: 12px; color: #064aa3; font-size: 44px; }
+      .screen-image {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 14px;
+      }
+      .feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .feature {
+        min-height: 128px;
+        border: 1px solid #b8cbea;
+        border-radius: 8px;
+        background: #fff;
+        padding: 16px;
+      }
+      .feature-icon { color: #0b4fa8; font-size: 36px; font-weight: 900; }
+      .benefits { grid-template-columns: 1fr 1.15fr; }
+      .check-list { margin: 0; padding: 0; list-style: none; line-height: 2; font-weight: 800; }
+      .check-list li::before { content: "✓"; color: #15803d; font-weight: 900; margin-right: 8px; }
+      .contact {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        gap: 18px;
+        align-items: center;
+        color: #062b70;
+      }
+      .contact-badge { background: #064aa3; color: #fff; padding: 14px 18px; border-radius: 6px; font-weight: 900; }
+      .phone { font-size: 32px; font-weight: 900; }
+      .grid { display: grid; gap: 18px; }
+      .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 22px; }
+      .main { grid-template-columns: minmax(300px, .9fr) minmax(360px, 1.1fr); align-items: start; }
+      .panel {
+        border: 1px solid var(--line);
+        background: rgba(255,255,255,.95);
+        box-shadow: 0 18px 42px rgba(13, 68, 61, .08);
+        padding: 20px;
+      }
+      h2 { margin: 0; font-size: 22px; }
+      .small { color: var(--muted); font-size: 13px; line-height: 1.7; font-weight: 700; }
+      .stat-value { margin: 8px 0 0; font-size: 40px; line-height: 1; font-weight: 900; }
+      label { display: grid; gap: 7px; color: #334155; font-size: 13px; font-weight: 800; }
+      input, select, textarea, button {
+        width: 100%;
+        border-radius: 0;
+        font: inherit;
+      }
+      input, select, textarea {
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        padding: 12px;
+      }
+      textarea { min-height: 78px; resize: vertical; }
+      button {
+        border: 0;
+        background: var(--brand);
+        color: #fff;
+        padding: 14px 16px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+      .button-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; margin-top: 16px; }
+      .sub-button { border: 1px solid #cbd5e1; background: #fff; color: #334155; white-space: nowrap; }
+      .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; }
+      .span-2 { grid-column: span 2; }
+      .errors { display: none; margin-top: 16px; border-left: 8px solid var(--danger); background: var(--warn-bg); padding: 14px; color: #991b1b; font-weight: 800; line-height: 1.7; }
+      .message { display: none; margin-top: 16px; background: #eaf6ff; padding: 14px; color: #075985; font-weight: 800; }
+      .search-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; }
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; }
+      .card { border-left: 8px solid var(--brand); background: #ecfdf5; padding: 16px; }
+      .card strong { display: block; margin-top: 6px; font-size: 30px; line-height: 1.1; color: #0f172a; }
+      table { width: 100%; border-collapse: collapse; background: #fff; }
+      th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; vertical-align: top; font-size: 13px; }
+      th { background: #f1f5f9; color: #334155; font-weight: 900; }
+      .report th, .report td { border: 2px solid #334155; }
+      .report caption { padding: 14px; font-size: 24px; font-weight: 900; }
+      .table-wrap { overflow-x: auto; margin-top: 16px; }
+      .danger { color: var(--danger); font-weight: 900; }
+
+      @media (max-width: 900px) {
+        .hero, .hero-icons, .stats, .main, .cards, .search-grid, .flow, .screen-image, .feature-grid, .benefits, .contact { grid-template-columns: 1fr; }
+        .form-grid { grid-template-columns: 1fr; }
+        .span-2 { grid-column: auto; }
+        .button-row { grid-template-columns: 1fr; }
+        .flow-card { border-right: 0; border-bottom: 1px solid #c7d7ef; }
+        .flow-card:last-child { border-bottom: 0; }
+      }
+
+      @media print {
+        body { background: #fff; }
+        header, .no-print, .panel:not(.print-area), .promo { display: none !important; }
+        .wrap { max-width: none; padding: 0; }
+        .panel { border: 0; box-shadow: none; padding: 0; }
+        th, td { padding: 6px; font-size: 11px; }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap hero">
+        <div>
+          <p class="eyebrow">紙の作業日報から、スピーディーで正確な管理へ</p>
+          <h1>コンテナ管理システムで<br><span class="red">記録・管理・帳票作成</span>がすべてラクに!</h1>
+          <p class="lead">設置・回収の記録を一元管理し、現在の設置状況や長期設置コンテナを自動でお知らせします。</p>
+        </div>
+        <div class="hero-icons">
+          <div class="hero-icon"><div class="circle">✎</div><span>紙に記入<br>今まで通りでOK</span></div>
+          <div class="hero-icon"><div class="circle">▣</div><span>入力するだけ<br>自動で反映・更新</span></div>
+          <div class="hero-icon"><div class="circle">▤</div><span>帳票も自動作成<br>印刷して提出</span></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap grid">
+      <section class="promo">
+        <h2 class="section-title">システムの流れ</h2>
+        <div class="boxed grid flow">
+          <article class="flow-card">
+            <h3><span class="num">1</span> 紙に記入（ドライバー）</h3>
+            <p class="small">今まで通り、作業日報に記入するだけ</p>
+            <div class="mini-paper"><table><tr><th>会社名</th><th>設置</th><th>回収</th></tr><tr><td>○○建設</td><td>置1番</td><td>408</td></tr><tr><td>△△工業</td><td>215</td><td></td></tr></table></div>
+          </article>
+          <article class="flow-card">
+            <h3><span class="num">2</span> システムに入力（事務員）</h3>
+            <p class="small">必要な項目を入力するとシステムに自動反映</p>
+            <div class="mini-screen"><div>作業日 2026/8/21</div><div>会社名 ○○建設</div><div>回収 408番</div><div>設置 置1番</div></div>
+          </article>
+          <article class="flow-card">
+            <h3><span class="num">3</span> 自動で反映・更新</h3>
+            <p class="small">現在の設置状況データベースをリアルタイムで更新</p>
+            <div class="mini-db">▦</div>
+          </article>
+          <article class="flow-card">
+            <h3><span class="num">4</span> 帳票を自動作成・印刷</h3>
+            <p class="small">一覧表・作業履歴をワンクリックで出力</p>
+            <div class="mini-print"><span>Excel</span><span>PDF</span></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="promo">
+        <h2 class="section-title">画面イメージ</h2>
+        <div class="boxed grid screen-image">
+          <div>
+            <h3>① 現在の設置状況一覧</h3>
+            <p class="small">どこに何のコンテナがあるか一目で分かります。</p>
+          </div>
+          <div>
+            <h3>② 長期設置アラート</h3>
+            <p class="small">設置期間が長いコンテナを自動でお知らせします。</p>
+          </div>
+          <div>
+            <h3>③ コンテナ番号から検索</h3>
+            <p class="small">番号だけで、現在の設置場所をすぐ確認できます。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="promo">
+        <h2 class="section-title">主な機能</h2>
+        <div class="grid feature-grid">
+          <article class="feature"><div class="feature-icon">☑</div><h3>入力ミスを自動チェック</h3><p class="small">存在しない番号や別のお客様に設置中の番号をエラー表示します。</p></article>
+          <article class="feature"><div class="feature-icon">⌕</div><h3>カゴも管理</h3><p class="small">番号のないカゴも、種類・設置先・設置日で管理できます。</p></article>
+          <article class="feature"><div class="feature-icon">▣</div><h3>設置期間の自動計算</h3><p class="small">設置日から経過日数を自動で計算し、アラート表示に連動します。</p></article>
+          <article class="feature"><div class="feature-icon">▤</div><h3>帳票をすぐに出力</h3><p class="small">日報・収集履歴・コンテナ一覧を印刷またはCSVで出力できます。</p></article>
+        </div>
+      </section>
+
+      <section class="promo grid benefits">
+        <div class="boxed">
+          <h2 class="section-title">導入のメリット</h2>
+          <ul class="check-list">
+            <li>事務作業の時間を大幅に削減</li>
+            <li>入力ミス・記録漏れを防ぎ、正確な管理を実現</li>
+            <li>長期設置コンテナを把握し、腐食・破損リスクを未然に防止</li>
+            <li>紙の転記作業ゼロで、事務員さんの負担も軽減</li>
+          </ul>
+        </div>
+        <div class="boxed contact">
+          <div class="contact-badge">お問い合わせ</div>
+          <div>
+            <h2>NSL相談所（Next Sales Lab）</h2>
+            <div class="phone">090-8100-1417</div>
+            <p class="small">asano@nextsaleslab.com</p>
+          </div>
+          <p class="small">まずはお気軽にご相談ください。お客様の業務に合わせて、最適なシステムをご提案します。</p>
+        </div>
+      </section>
+
+      <section class="grid stats no-print" id="stats"></section>
+
+      <section class="grid main no-print">
+        <form class="panel" id="reportForm">
+          <h2>作業日報入力</h2>
+          <p class="small">紙の日報から必要項目だけ入力します。</p>
+          <div class="grid form-grid">
+            <label>作業日<input type="date" name="workDate" required /></label>
+            <label>作業内容
+              <select name="workType">
+                <option>設置</option><option>回収</option><option>交換</option><option>手積み</option>
+              </select>
+            </label>
+            <label>お客様・会社名<input name="companyName" value="○○建設" required /></label>
+            <label>現場名<input name="siteName" value="同左" /></label>
+            <label>運搬者<input name="driverName" placeholder="例：高村さん" /></label>
+            <label>種類
+              <select name="assetType"><option>コンテナ</option><option>カゴ</option><option>手積み</option></select>
+            </label>
+            <label id="installWrap">設置コンテナ<select name="installAssetId"></select></label>
+            <label id="collectWrap">回収コンテナ<select name="collectAssetId"></select></label>
+            <label>数量・単位<input name="quantity" value="1基" placeholder="例：2.5m3、kg、本、1基" /></label>
+            <label class="span-2">備考<textarea name="note"></textarea></label>
+          </div>
+          <div class="errors" id="errors"></div>
+          <div class="message" id="message"></div>
+          <div class="button-row">
+            <button type="submit">登録して管理表へ反映</button>
+            <button type="button" class="sub-button" id="resetButton">見本へ戻す</button>
+          </div>
+        </form>
+
+        <div class="grid">
+          <section class="panel">
+            <h2>今どこに何があるか</h2>
+            <p class="small">会社名またはコンテナ番号で一発検索できます。</p>
+            <div class="grid search-grid">
+              <label>会社名で検索<input id="companySearch" value="○○建設" /></label>
+              <label>番号で検索<input id="assetSearch" placeholder="例：408番" /></label>
+            </div>
+            <div class="grid cards" id="currentCards"></div>
+          </section>
+
+          <section class="panel">
+            <h2>設置期間が長い順</h2>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>経過</th><th>番号</th><th>会社名</th><th>現場名</th><th>設置日</th></tr></thead>
+                <tbody id="longTermRows"></tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </section>
+
+      <section class="panel print-area">
+        <div class="no-print" style="display:flex; gap:10px; justify-content:space-between; align-items:start; flex-wrap:wrap;">
+          <div><h2>帳票出力</h2><p class="small">印刷、PDF保存、Excel用CSV出力ができます。</p></div>
+          <div style="display:flex; gap:10px;">
+            <button class="sub-button" type="button" onclick="window.print()">印刷/PDF</button>
+            <button class="sub-button" type="button" id="csvButton">Excel用CSV</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="report">
+            <caption>収集履歴</caption>
+            <thead><tr><th>収集年月日</th><th>現場名（工事件名）及び住所</th><th>運搬者</th><th>設置</th><th>回収</th><th>品目、数量及び搬入先処理場</th><th>備考</th></tr></thead>
+            <tbody id="reportRows"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      const assets = [
+        ['container-oki-1', '置1番', 'コンテナ', '2.5m3'],
+        ['container-408', '408番', 'コンテナ', '2.5m3'],
+        ['container-222', '222番', 'コンテナ', '4.5m3'],
+        ['container-223', '223番', 'コンテナ', '4.5m3'],
+        ['container-213', '213番', 'コンテナ', '5.5m3'],
+        ['container-206', '206番', 'コンテナ', '6m3'],
+        ['container-215', '215番', 'コンテナ', '5.5m3'],
+        ['container-210', '210番', 'コンテナ', '5.5m3'],
+        ['basket-flex', 'カゴ・フレコン', 'カゴ', 'フレコン'],
+        ['basket-board', 'カゴ・ボード', 'カゴ', 'ボード用']
+      ].map(([id, label, assetType, sizeLabel]) => ({ id, label, assetType, sizeLabel }));
+
+      const defaults = {
+        thresholds: [
+          { id: 'three', label: '3ヶ月以上', days: 90 },
+          { id: 'six', label: '6ヶ月以上', days: 180 },
+          { id: 'year', label: '1年以上', days: 365 }
+        ],
+        assignments: [
+          { id: 'assign-oki-1', assetId: 'container-oki-1', assetLabel: '置1番', assetType: 'コンテナ', sizeLabel: '2.5m3', companyName: '○○建設', siteName: '同左', installedOn: '2026-08-21', quantity: '1基' },
+          { id: 'assign-210', assetId: 'container-210', assetLabel: '210番', assetType: 'コンテナ', sizeLabel: '5.5m3', companyName: 'ダイワプラスモア', siteName: '北関東営業所', installedOn: '2026-07-18', quantity: '1基' },
+          { id: 'assign-basket-flex', assetId: 'basket-flex', assetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', companyName: '市村板金', siteName: '事務所', installedOn: '2026-07-27', quantity: '2袋' },
+          { id: 'assign-222', assetId: 'container-222', assetLabel: '222番', assetType: 'コンテナ', sizeLabel: '4.5m3', companyName: '資材置場', siteName: '資材置場', installedOn: '2026-03-18', quantity: '1基' }
+        ],
+        reports: [
+          { id: 'report-001', workDate: '2026-08-21', companyName: '○○建設', siteName: '同左', driverName: '事務入力', workType: '交換', installAssetId: 'container-oki-1', installAssetLabel: '置1番', collectAssetId: 'container-408', collectAssetLabel: '408番', assetType: 'コンテナ', sizeLabel: '2.5m3', quantity: '1基', note: '紙日報から登録した見本' },
+          { id: 'report-002', workDate: '2026-07-29', companyName: '菜穂電気', siteName: '作業場', driverName: '菜穂さん', workType: '交換', installAssetId: 'container-210', installAssetLabel: '210番', collectAssetId: 'container-215', collectAssetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', quantity: '1基' },
+          { id: 'report-003', workDate: '2026-07-27', companyName: '市村板金', siteName: '事務所', driverName: '事務入力', workType: '設置', installAssetId: 'basket-flex', installAssetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', quantity: '2袋' }
+        ]
+      };
+
+      const storeKey = 'genba-container-management-pages-v1';
+      const $ = (id) => document.getElementById(id);
+      const todayIso = () => new Date().toISOString().slice(0, 10);
+      const fmt = (date) => {
+        if (!date) return '';
+        const [year, month, day] = date.split('-');
+        return `${year}/${Number(month)}/${Number(day)}`;
+      };
+      const norm = (text) => String(text || '').trim().toLowerCase().replace(/\s/g, '');
+      const getState = () => JSON.parse(localStorage.getItem(storeKey) || JSON.stringify(defaults));
+      const setState = (state) => localStorage.setItem(storeKey, JSON.stringify(state));
+      const assetById = (id) => assets.find((asset) => asset.id === id);
+      const daysFrom = (date) => Math.max(0, Math.floor((new Date(todayIso()) - new Date(date)) / 86400000));
+
+      function fillAssetOptions() {
+        const form = $('reportForm');
+        const type = form.assetType.value;
+        const html = '<option value="">選択してください</option>' + assets
+          .filter((asset) => asset.assetType === type)
+          .map((asset) => `<option value="${asset.id}">${asset.label} / ${asset.sizeLabel}</option>`).join('');
+        form.installAssetId.innerHTML = html;
+        form.collectAssetId.innerHTML = html;
+        if (type === 'コンテナ') form.installAssetId.value = 'container-408';
+        if (type === 'カゴ') form.installAssetId.value = 'basket-flex';
+      }
+
+      function activeAssignments(state) {
+        return state.assignments.filter((item) => !item.collectedOn);
+      }
+
+      function render() {
+        const state = getState();
+        const active = activeAssignments(state);
+        const long = active.map((item) => ({ ...item, elapsedDays: daysFrom(item.installedOn) })).sort((a, b) => b.elapsedDays - a.elapsedDays);
+        $('stats').innerHTML = state.thresholds.map((threshold) => {
+          const count = long.filter((item) => item.elapsedDays >= threshold.days).length;
+          return `<div class="panel"><p class="small">長期設置コンテナ</p><p class="stat-value">${count}件</p><label>${threshold.label}<input type="number" min="1" data-threshold="${threshold.id}" value="${threshold.days}"></label></div>`;
+        }).join('');
+
+        const companyQuery = norm($('companySearch').value);
+        const assetQuery = norm($('assetSearch').value);
+        const current = assetQuery
+          ? active.filter((item) => norm(item.assetLabel).includes(assetQuery))
+          : active.filter((item) => !companyQuery || norm(item.companyName).includes(companyQuery));
+        $('currentCards').innerHTML = current.length ? current.map((item) => `
+          <article class="card"><span>${item.companyName}</span><strong>${item.assetLabel}</strong>
+          <p class="small">設置日：${fmt(item.installedOn)}<br>経過日数：${daysFrom(item.installedOn)}日<br>種類：${item.sizeLabel} ${item.assetType}<br>現場名：${item.siteName}</p></article>
+        `).join('') : '<p class="small">該当する現在設置データはありません。</p>';
+
+        $('longTermRows').innerHTML = long.slice(0, 12).map((item) => `<tr><td class="danger">${item.elapsedDays}日</td><td>${item.assetLabel}</td><td>${item.companyName}</td><td>${item.siteName}</td><td>${fmt(item.installedOn)}</td></tr>`).join('');
+        $('reportRows').innerHTML = state.reports.map((item) => `<tr><td>${fmt(item.workDate)}</td><td><b>${item.companyName}</b><br>${item.siteName}</td><td>${item.driverName || ''}</td><td>${item.installAssetLabel || ''}</td><td>${item.collectAssetLabel || ''}</td><td>${item.sizeLabel} ${item.assetType} / ${item.quantity}</td><td>${item.note || ''}</td></tr>`).join('');
+      }
+
+      function validate(form, state) {
+        const errors = [];
+        const active = activeAssignments(state);
+        const needsInstall = ['設置', '交換'].includes(form.workType.value);
+        const needsCollect = ['回収', '交換'].includes(form.workType.value);
+        if (!form.workDate.value) errors.push('作業日を入力してください。');
+        if (!form.companyName.value.trim()) errors.push('お客様・会社名を入力してください。');
+        if (form.workType.value !== '手積み' && !form.quantity.value.trim()) errors.push('数量・単位を入力してください。');
+        if (form.workType.value === '手積み') return errors;
+        if (needsInstall) {
+          const installAsset = assetById(form.installAssetId.value);
+          const activeInstall = active.find((item) => item.assetId === form.installAssetId.value);
+          if (!installAsset) errors.push('設置するコンテナまたはカゴを選択してください。');
+          if (installAsset && installAsset.assetType === 'コンテナ' && activeInstall) errors.push(`${activeInstall.assetLabel}は現在、${activeInstall.companyName} / ${activeInstall.siteName}に設置中です。`);
+        }
+        if (needsCollect) {
+          const collectAsset = assetById(form.collectAssetId.value);
+          const activeCollect = active.find((item) => {
+            if (collectAsset && collectAsset.assetType === 'カゴ') return item.assetId === form.collectAssetId.value && norm(item.companyName) === norm(form.companyName.value);
+            return item.assetId === form.collectAssetId.value;
+          });
+          if (!collectAsset) errors.push('回収するコンテナまたはカゴを選択してください。');
+          else if (!activeCollect) errors.push(`${collectAsset.label}は現在設置中ではありません。存在しない番号、別会社のカゴ、または回収済みの可能性があります。`);
+          else if (norm(activeCollect.companyName) !== norm(form.companyName.value)) errors.push(`${activeCollect.assetLabel}は現在、別のお客様（${activeCollect.companyName} / ${activeCollect.siteName}）に設置中です。`);
+        }
+        if (form.workType.value === '交換' && form.installAssetId.value === form.collectAssetId.value) errors.push('交換では設置番号と回収番号を別にしてください。');
+        return errors;
+      }
+
+      $('reportForm').addEventListener('submit', (event) => {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const state = getState();
+        const errors = validate(form, state);
+        $('errors').style.display = errors.length ? 'block' : 'none';
+        $('errors').innerHTML = errors.map((error) => `<div>${error}</div>`).join('');
+        $('message').style.display = 'none';
+        if (errors.length) return;
+
+        const needsInstall = ['設置', '交換'].includes(form.workType.value);
+        const needsCollect = ['回収', '交換'].includes(form.workType.value);
+        const installAsset = assetById(form.installAssetId.value);
+        const collectAsset = assetById(form.collectAssetId.value);
+        const active = activeAssignments(state);
+        const collectTarget = needsCollect ? active.find((item) => {
+          if (collectAsset && collectAsset.assetType === 'カゴ') return item.assetId === form.collectAssetId.value && norm(item.companyName) === norm(form.companyName.value);
+          return item.assetId === form.collectAssetId.value;
+        }) : null;
+        const report = {
+          id: `report-${Date.now()}`,
+          workDate: form.workDate.value,
+          companyName: form.companyName.value.trim(),
+          siteName: form.siteName.value.trim() || '未入力',
+          driverName: form.driverName.value.trim(),
+          workType: form.workType.value,
+          installAssetId: needsInstall ? form.installAssetId.value : '',
+          installAssetLabel: needsInstall && installAsset ? installAsset.label : '',
+          collectAssetId: needsCollect ? form.collectAssetId.value : '',
+          collectAssetLabel: needsCollect && collectAsset ? collectAsset.label : '',
+          assetType: form.assetType.value,
+          sizeLabel: (installAsset || collectAsset || { sizeLabel: form.assetType.value }).sizeLabel,
+          quantity: form.quantity.value.trim() || '1式',
+          note: form.note.value.trim()
+        };
+        state.assignments = state.assignments.map((item) => item.id === (collectTarget && collectTarget.id) ? { ...item, collectedOn: form.workDate.value } : item);
+        if (needsInstall && installAsset) {
+          state.assignments.unshift({ id: `assign-${Date.now()}`, assetId: installAsset.id, assetLabel: installAsset.label, assetType: installAsset.assetType, sizeLabel: installAsset.sizeLabel, companyName: report.companyName, siteName: report.siteName, installedOn: report.workDate, quantity: report.quantity, note: report.note });
+        }
+        state.reports.unshift(report);
+        setState(state);
+        $('companySearch').value = report.companyName;
+        $('assetSearch').value = report.installAssetLabel || report.collectAssetLabel || '';
+        $('message').textContent = `${report.companyName}の登録を反映しました。現在設置の一覧も更新済みです。`;
+        $('message').style.display = 'block';
+        render();
+      });
+
+      $('reportForm').addEventListener('change', (event) => {
+        const form = $('reportForm');
+        if (event.target.name === 'assetType') fillAssetOptions();
+        if (event.target.name === 'workType') {
+          const isHand = form.workType.value === '手積み';
+          form.assetType.value = isHand ? '手積み' : 'コンテナ';
+          form.assetType.disabled = isHand;
+          $('installWrap').style.display = ['設置', '交換'].includes(form.workType.value) && !isHand ? 'grid' : 'none';
+          $('collectWrap').style.display = ['回収', '交換'].includes(form.workType.value) && !isHand ? 'grid' : 'none';
+          fillAssetOptions();
+        }
+      });
+
+      $('companySearch').addEventListener('input', render);
+      $('assetSearch').addEventListener('input', render);
+      $('stats').addEventListener('input', (event) => {
+        if (!event.target.dataset.threshold) return;
+        const state = getState();
+        state.thresholds = state.thresholds.map((item) => item.id === event.target.dataset.threshold ? { ...item, days: Number(event.target.value) || item.days } : item);
+        setState(state);
+        render();
+      });
+      $('resetButton').addEventListener('click', () => { setState(defaults); $('message').textContent = '見本データに戻しました。'; $('message').style.display = 'block'; render(); });
+      $('csvButton').addEventListener('click', () => {
+        const state = getState();
+        const headers = ['作業日', '会社名', '現場名', '運搬者', '作業内容', '設置番号', '回収番号', '種類', '数量', '備考'];
+        const rows = state.reports.map((r) => [fmt(r.workDate), r.companyName, r.siteName, r.driverName, r.workType, r.installAssetLabel || '', r.collectAssetLabel || '', `${r.sizeLabel} ${r.assetType}`, r.quantity, r.note || '']);
+        const csv = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+        const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `コンテナ作業日報_${todayIso()}.csv`;
+        link.click();
+        URL.revokeObjectURL(url);
+      });
+
+      $('reportForm').workDate.value = todayIso();
+      if (!localStorage.getItem(storeKey)) setState(defaults);
+      fillAssetOptions();
+      $('collectWrap').style.display = 'none';
+      render();
+    </script>
+  </body>
+</html>
