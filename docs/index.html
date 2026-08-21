@@ -479,6 +479,10 @@
         grid-template-columns: 1fr 1fr;
       }
 
+      .database-search {
+        grid-template-columns: 1.2fr 1fr 1fr;
+      }
+
       .current-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
@@ -671,6 +675,7 @@
         .meta-grid,
         .form-grid,
         .search-grid,
+        .database-search,
         .current-grid,
         .nav-list {
           grid-template-columns: 1fr;
@@ -748,6 +753,7 @@
           <button class="nav-button active" data-view="dashboard"><span>▦</span><span>ダッシュボード</span><span class="badge">全体</span></button>
           <button class="nav-button" data-view="input"><span>＋</span><span>日報入力</span><span class="badge">登録</span></button>
           <button class="nav-button" data-view="current"><span>⌕</span><span>現在設置</span><span class="badge" id="navCurrentCount">0</span></button>
+          <button class="nav-button" data-view="database"><span>DB</span><span>データベース検索</span><span class="badge" id="navDatabaseCount">0</span></button>
           <button class="nav-button" data-view="alerts"><span>!</span><span>長期設置アラート</span><span class="badge red" id="navAlertCount">0</span></button>
           <button class="nav-button" data-view="reports"><span>▤</span><span>帳票プレビュー</span><span class="badge">印刷</span></button>
         </div>
@@ -767,6 +773,7 @@
           </div>
           <div class="action-row no-print">
             <button class="primary" data-jump="input">＋ 新規日報入力</button>
+            <button class="secondary" data-jump="database">データ検索</button>
             <button class="secondary" data-jump="reports">帳票を確認</button>
             <button class="danger-button" id="resetButton">デモデータに戻す</button>
           </div>
@@ -845,7 +852,7 @@
                 </label>
                 <label>お客様・会社名<input name="companyName" value="○○建設" required /></label>
                 <label>現場名<input name="siteName" value="同左" /></label>
-                <label>運搬者<input name="driverName" placeholder="例：高村さん" /></label>
+                <label>運搬車<input name="driverName" placeholder="例：2t車 / 高村さん" /></label>
                 <label>種類
                   <select name="assetType">
                     <option>コンテナ</option>
@@ -856,6 +863,7 @@
                 <label id="installWrap">設置コンテナ<select name="installAssetId"></select></label>
                 <label id="collectWrap">回収コンテナ<select name="collectAssetId"></select></label>
                 <label>数量・単位<input name="quantity" value="1基" placeholder="例：2.5m3、kg、本、1基" /></label>
+                <label>搬入先処理場<input name="disposalSite" value="友政" placeholder="例：友政、再資源化センター" /></label>
                 <label class="span-2">備考<textarea name="note" placeholder="必要な場合のみ入力"></textarea></label>
               </div>
               <div class="notice error" id="errors"></div>
@@ -885,6 +893,78 @@
                   <p>会社名を「○○建設」、回収コンテナを「210番」にすると、210番は別会社に設置中のためエラー表示されます。</p>
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="databaseView">
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <h3>会社名・コンテナ番号データベース検索</h3>
+                <p class="hint">コンテナ管理表と収集履歴を、同じ条件で横断検索できます。</p>
+              </div>
+            </div>
+            <div class="grid database-search">
+              <label>キーワード検索<input id="databaseKeyword" placeholder="会社名・現場名・番号・処理場で検索" /></label>
+              <label>搬出事業者名<input id="databaseCompany" placeholder="例：大橋技建" /></label>
+              <label>コンテナ番号<input id="databaseContainer" placeholder="例：206番、カゴ" /></label>
+            </div>
+            <div class="grid stats" style="margin-top: 14px;">
+              <div class="panel stat"><p>コンテナ管理表</p><strong id="dbContainerCount">0件</strong><span>設置・回収履歴</span></div>
+              <div class="panel stat green"><p>収集履歴</p><strong id="dbHistoryCount">0件</strong><span>作業日報の履歴</span></div>
+              <div class="panel stat yellow"><p>検索対象会社</p><strong id="dbCompanyCount">0社</strong><span>搬出事業者名</span></div>
+              <div class="panel stat red"><p>未回収</p><strong id="dbOpenCount">0件</strong><span>回収日が空欄</span></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <h3>コンテナ管理表</h3>
+                <p class="hint">コンテナ番号・NO・設置日・回収日・搬出事業者名・現場名で管理します。</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>コンテナ番号</th>
+                    <th>NO</th>
+                    <th>設置日</th>
+                    <th>回収日</th>
+                    <th>搬出事業者名</th>
+                    <th>現場名</th>
+                  </tr>
+                </thead>
+                <tbody id="databaseContainerRows"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <h3>収集履歴</h3>
+                <p class="hint">搬出事業者名ごとの収集日・現場名・運搬車・設置/回収番号・品目数量・処理場・備考を管理します。</p>
+              </div>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>搬出事業者名</th>
+                    <th>NO</th>
+                    <th>収集日</th>
+                    <th>現場名</th>
+                    <th>運搬車</th>
+                    <th>コンテナ番号<br>（設置日・回収日）</th>
+                    <th>品目、数量（m³）及び搬入先処理場</th>
+                    <th>備考</th>
+                  </tr>
+                </thead>
+                <tbody id="databaseHistoryRows"></tbody>
+              </table>
             </div>
           </div>
         </section>
@@ -960,7 +1040,7 @@
                     <tr>
                       <th>収集年月日</th>
                       <th>現場名（工事件名）及び住所</th>
-                      <th>運搬者</th>
+                      <th>運搬車</th>
                       <th>設置</th>
                       <th>回収</th>
                       <th>品目、数量及び搬入先処理場</th>
@@ -997,21 +1077,24 @@
           { id: 'one-year', label: '1年以上', days: 365 }
         ],
         assignments: [
-          { id: 'assign-oki-1', assetId: 'container-oki-1', assetLabel: '置1番', assetType: 'コンテナ', sizeLabel: '2.5m3', companyName: '○○建設', siteName: '同左', installedOn: '2026-08-21', quantity: '1基' },
-          { id: 'assign-210', assetId: 'container-210', assetLabel: '210番', assetType: 'コンテナ', sizeLabel: '5.5m3', companyName: 'ダイワプラスモア', siteName: '北関東営業所', installedOn: '2026-07-18', quantity: '1基' },
-          { id: 'assign-206', assetId: 'container-206', assetLabel: '206番', assetType: 'コンテナ', sizeLabel: '6m3', companyName: '大橋技建', siteName: 'ハウス食品', installedOn: '2026-02-12', quantity: '1基' },
-          { id: 'assign-215', assetId: 'container-215', assetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', companyName: '開発株式会社', siteName: '栃木市 大橋邸', installedOn: '2026-03-05', quantity: '1基' },
-          { id: 'assign-basket-flex', assetId: 'basket-flex', assetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', companyName: '市村板金', siteName: '事務所', installedOn: '2026-07-27', quantity: '2袋' }
+          { id: 'assign-408-old', assetId: 'container-408', assetLabel: '408番', assetType: 'コンテナ', sizeLabel: '2.5m3', companyName: '○○建設', siteName: '同左', installedOn: '2026-07-01', collectedOn: '2026-08-21', quantity: '1基', disposalSite: '友政' },
+          { id: 'assign-oki-1', assetId: 'container-oki-1', assetLabel: '置1番', assetType: 'コンテナ', sizeLabel: '2.5m3', companyName: '○○建設', siteName: '同左', installedOn: '2026-08-21', quantity: '1基', disposalSite: '友政' },
+          { id: 'assign-222-old', assetId: 'container-222', assetLabel: '222番', assetType: 'コンテナ', sizeLabel: '4.5m3', companyName: '資材置場', siteName: '資材置場', installedOn: '2026-03-18', collectedOn: '2026-04-06', quantity: '1基', disposalSite: '友政' },
+          { id: 'assign-213-old', assetId: 'container-213', assetLabel: '213番', assetType: 'コンテナ', sizeLabel: '5.5m3', companyName: '資材置場', siteName: '資材置場', installedOn: '2026-04-06', collectedOn: '2026-05-13', quantity: '1基', disposalSite: '友政' },
+          { id: 'assign-210', assetId: 'container-210', assetLabel: '210番', assetType: 'コンテナ', sizeLabel: '5.5m3', companyName: 'ダイワプラスモア', siteName: '北関東営業所', installedOn: '2026-07-18', quantity: '1基', disposalSite: '友政' },
+          { id: 'assign-206', assetId: 'container-206', assetLabel: '206番', assetType: 'コンテナ', sizeLabel: '6m3', companyName: '大橋技建', siteName: 'ハウス食品', installedOn: '2026-02-12', quantity: '1基', disposalSite: '友政' },
+          { id: 'assign-215', assetId: 'container-215', assetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', companyName: '開発株式会社', siteName: '栃木市 大橋邸', installedOn: '2026-03-05', quantity: '1基', disposalSite: '友政' },
+          { id: 'assign-basket-flex', assetId: 'basket-flex', assetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', companyName: '市村板金', siteName: '事務所', installedOn: '2026-07-27', quantity: '2袋', disposalSite: '友政' }
         ],
         reports: [
-          { id: 'report-001', workDate: '2026-08-21', companyName: '○○建設', siteName: '同左', driverName: '事務入力', workType: '交換', installAssetId: 'container-oki-1', installAssetLabel: '置1番', collectAssetId: 'container-408', collectAssetLabel: '408番', assetType: 'コンテナ', sizeLabel: '2.5m3', quantity: '1基', note: '紙日報から登録した見本' },
-          { id: 'report-002', workDate: '2026-07-29', companyName: '菜穂電気', siteName: '作業場', driverName: '菜穂さん', workType: '交換', installAssetId: 'container-210', installAssetLabel: '210番', collectAssetId: 'container-215', collectAssetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', quantity: '1基' },
-          { id: 'report-003', workDate: '2026-07-27', companyName: '市村板金', siteName: '事務所', driverName: '事務入力', workType: '設置', installAssetId: 'basket-flex', installAssetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', quantity: '2袋' },
-          { id: 'report-004', workDate: '2026-03-05', companyName: '開発株式会社', siteName: '栃木市 大橋邸', driverName: '事務入力', workType: '設置', installAssetId: 'container-215', installAssetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', quantity: '1基' }
+          { id: 'report-001', workDate: '2026-08-21', companyName: '○○建設', siteName: '同左', driverName: '2t車', workType: '交換', installAssetId: 'container-oki-1', installAssetLabel: '置1番', collectAssetId: 'container-408', collectAssetLabel: '408番', assetType: 'コンテナ', sizeLabel: '2.5m3', quantity: '1基', disposalSite: '友政', note: '紙日報から登録した見本' },
+          { id: 'report-002', workDate: '2026-07-29', companyName: '菜穂電気', siteName: '作業場', driverName: '菜穂さん', workType: '交換', installAssetId: 'container-210', installAssetLabel: '210番', collectAssetId: 'container-215', collectAssetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', quantity: '1基', disposalSite: '友政' },
+          { id: 'report-003', workDate: '2026-07-27', companyName: '市村板金', siteName: '事務所', driverName: '2t車', workType: '設置', installAssetId: 'basket-flex', installAssetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', quantity: '2袋', disposalSite: '友政' },
+          { id: 'report-004', workDate: '2026-03-05', companyName: '開発株式会社', siteName: '栃木市 大橋邸', driverName: '4t車', workType: '設置', installAssetId: 'container-215', installAssetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', quantity: '1基', disposalSite: '友政' }
         ]
       };
 
-      const storeKey = 'container-manager-demo-v2';
+      const storeKey = 'container-manager-demo-v3';
       const $ = (id) => document.getElementById(id);
       const todayIso = () => new Date().toISOString().slice(0, 10);
       const normalize = (text) => String(text || '').trim().toLowerCase().replace(/\s/g, '');
@@ -1042,6 +1125,86 @@
           .sort((a, b) => b.elapsedDays - a.elapsedDays);
       }
 
+      function containerNo(label) {
+        return String(label || '').replace('番', '').trim();
+      }
+
+      function rowNo(index) {
+        return String(index + 1).padStart(3, '0');
+      }
+
+      function containerDateText(report) {
+        const parts = [];
+        if (report.installAssetLabel) parts.push(`設置 ${report.installAssetLabel}（${formatDate(report.workDate)}）`);
+        if (report.collectAssetLabel) parts.push(`回収 ${report.collectAssetLabel}（${formatDate(report.workDate)}）`);
+        if (!parts.length && report.workType === '手積み') parts.push('手積み');
+        return parts.join(' / ');
+      }
+
+      function buildContainerDatabase(state) {
+        return state.assignments
+          .map((assignment, index) => ({
+            no: rowNo(index),
+            containerNumber: containerNo(assignment.assetLabel),
+            installedOn: assignment.installedOn,
+            collectedOn: assignment.collectedOn || '',
+            companyName: assignment.companyName,
+            siteName: assignment.siteName,
+            searchText: [
+              assignment.assetLabel,
+              containerNo(assignment.assetLabel),
+              assignment.companyName,
+              assignment.siteName,
+              assignment.installedOn,
+              assignment.collectedOn || ''
+            ].join(' ')
+          }))
+          .sort((a, b) => (b.installedOn || '').localeCompare(a.installedOn || ''));
+      }
+
+      function buildHistoryDatabase(state) {
+        return state.reports
+          .map((report, index) => ({
+            no: rowNo(index),
+            collectedOn: report.workDate,
+            companyName: report.companyName,
+            siteName: report.siteName,
+            vehicleName: report.driverName || '',
+            containerText: containerDateText(report),
+            itemText: `${report.sizeLabel} ${report.assetType} / ${report.quantity} / ${report.disposalSite || '未入力'}`,
+            note: report.note || '',
+            searchText: [
+              report.companyName,
+              report.siteName,
+              report.driverName || '',
+              report.installAssetLabel || '',
+              report.collectAssetLabel || '',
+              report.sizeLabel,
+              report.quantity,
+              report.disposalSite || '',
+              report.note || ''
+            ].join(' ')
+          }))
+          .sort((a, b) => (b.collectedOn || '').localeCompare(a.collectedOn || ''));
+      }
+
+      function databaseFilters() {
+        return {
+          keyword: normalize($('databaseKeyword').value),
+          company: normalize($('databaseCompany').value),
+          container: normalize($('databaseContainer').value)
+        };
+      }
+
+      function matchesDatabase(row, filters) {
+        const text = normalize(row.searchText);
+        const company = normalize(row.companyName);
+        const container = normalize(row.containerNumber || row.containerText || '');
+        return (!filters.keyword || text.includes(filters.keyword)) &&
+          (!filters.company || company.includes(filters.company)) &&
+          (!filters.container || container.includes(filters.container));
+      }
+
       function showView(name) {
         document.querySelectorAll('.view').forEach((view) => view.classList.remove('active'));
         document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.view === name));
@@ -1050,6 +1213,7 @@
           dashboard: ['ダッシュボード', 'コンテナ関係の状況を、最初の画面でまとめて確認します。'],
           input: ['日報入力', '紙の日報から必要項目だけ入力し、管理表へ自動反映します。'],
           current: ['現在設置', '会社名またはコンテナ番号で、今どこに何があるか確認します。'],
+          database: ['データベース検索', '添付帳票の項目に合わせて、会社名・コンテナ番号で検索します。'],
           alerts: ['長期設置アラート', '設置期間が長いコンテナを優先順で確認します。'],
           reports: ['帳票プレビュー', '現在使っている紙の帳票に近い形で出力します。']
         };
@@ -1078,6 +1242,7 @@
         $('statLong').textContent = `${long.filter((item) => item.elapsedDays >= 90).length}件`;
         $('statToday').textContent = `${state.reports.filter((report) => report.workDate === today).length}件`;
         $('navCurrentCount').textContent = active.length;
+        $('navDatabaseCount').textContent = state.assignments.length + state.reports.length;
         $('navAlertCount').textContent = long.filter((item) => item.elapsedDays >= 90).length;
       }
 
@@ -1172,6 +1337,45 @@
         }).join('');
       }
 
+      function renderDatabase(state) {
+        const filters = databaseFilters();
+        const containerRows = buildContainerDatabase(state).filter((row) => matchesDatabase(row, filters));
+        const historyRows = buildHistoryDatabase(state).filter((row) => matchesDatabase(row, filters));
+        const companies = new Set([...containerRows, ...historyRows].map((row) => row.companyName));
+        $('dbContainerCount').textContent = `${containerRows.length}件`;
+        $('dbHistoryCount').textContent = `${historyRows.length}件`;
+        $('dbCompanyCount').textContent = `${companies.size}社`;
+        $('dbOpenCount').textContent = `${containerRows.filter((row) => !row.collectedOn).length}件`;
+
+        $('databaseContainerRows').innerHTML = containerRows.length
+          ? containerRows.map((row) => `
+              <tr>
+                <td>${row.containerNumber}</td>
+                <td>${row.no}</td>
+                <td>${formatDate(row.installedOn)}</td>
+                <td>${row.collectedOn ? formatDate(row.collectedOn) : '<span class="status-pill warn">未回収</span>'}</td>
+                <td>${row.companyName}</td>
+                <td>${row.siteName}</td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="6">該当するコンテナ管理表データはありません。</td></tr>';
+
+        $('databaseHistoryRows').innerHTML = historyRows.length
+          ? historyRows.map((row) => `
+              <tr>
+                <td>${row.companyName}</td>
+                <td>${row.no}</td>
+                <td>${formatDate(row.collectedOn)}</td>
+                <td>${row.siteName}</td>
+                <td>${row.vehicleName}</td>
+                <td>${row.containerText}</td>
+                <td>${row.itemText}</td>
+                <td>${row.note}</td>
+              </tr>
+            `).join('')
+          : '<tr><td colspan="8">該当する収集履歴データはありません。</td></tr>';
+      }
+
       function renderReports(state) {
         $('reportRows').innerHTML = state.reports.map((report) => `
           <tr>
@@ -1180,7 +1384,7 @@
             <td>${report.driverName || ''}</td>
             <td>${report.installAssetLabel || ''}</td>
             <td>${report.collectAssetLabel || ''}</td>
-            <td>${report.sizeLabel} ${report.assetType} / ${report.quantity}</td>
+            <td>${report.sizeLabel} ${report.assetType} / ${report.quantity} / ${report.disposalSite || '未入力'}</td>
             <td>${report.note || ''}</td>
           </tr>
         `).join('');
@@ -1191,6 +1395,7 @@
         renderStats(state);
         renderDashboard(state);
         renderCurrent(state);
+        renderDatabase(state);
         renderAlerts(state);
         renderReports(state);
       }
@@ -1277,6 +1482,7 @@
           assetType: form.assetType.value,
           sizeLabel: baseAsset.sizeLabel,
           quantity: form.quantity.value.trim() || '1式',
+          disposalSite: form.disposalSite.value.trim() || '未入力',
           note: form.note.value.trim()
         };
 
@@ -1294,6 +1500,7 @@
             siteName: report.siteName,
             installedOn: report.workDate,
             quantity: report.quantity,
+            disposalSite: report.disposalSite,
             note: report.note
           });
         }
@@ -1321,7 +1528,7 @@
 
       function downloadCsv() {
         const state = getState();
-        const headers = ['作業日', '会社名', '現場名', '運搬者', '作業内容', '設置番号', '回収番号', '種類', '数量', '備考'];
+        const headers = ['作業日', '会社名', '現場名', '運搬車', '作業内容', '設置番号', '回収番号', '種類', '数量', '搬入先処理場', '備考'];
         const rows = state.reports.map((report) => [
           formatDate(report.workDate),
           report.companyName,
@@ -1332,6 +1539,7 @@
           report.collectAssetLabel || '',
           `${report.sizeLabel} ${report.assetType}`,
           report.quantity,
+          report.disposalSite || '',
           report.note || ''
         ]);
         const csv = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
@@ -1352,6 +1560,9 @@
       });
       $('companySearch').addEventListener('input', renderAll);
       $('assetSearch').addEventListener('input', renderAll);
+      $('databaseKeyword').addEventListener('input', renderAll);
+      $('databaseCompany').addEventListener('input', renderAll);
+      $('databaseContainer').addEventListener('input', renderAll);
       $('printButton').addEventListener('click', () => window.print());
       $('csvButton').addEventListener('click', downloadCsv);
       $('resetButton').addEventListener('click', () => {
