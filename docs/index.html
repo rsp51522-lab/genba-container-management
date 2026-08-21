@@ -3,380 +3,1009 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>コンテナ管理</title>
+    <title>コンテナ管理システム｜操作デモ</title>
     <style>
       :root {
-        --bg: #f5f7f8;
-        --surface: #ffffff;
-        --line: #d7e3df;
-        --text: #16302b;
-        --muted: #5d716c;
-        --brand: #0d6b5f;
-        --danger: #cb4e3d;
-        --warn-bg: #fff1f0;
+        --bg: #eef3f8;
+        --panel: #ffffff;
+        --panel-soft: #f7faff;
+        --text: #111827;
+        --muted: #64748b;
+        --line: #d8e3f0;
+        --blue: #0b56b3;
+        --blue-dark: #073476;
+        --blue-soft: #eaf2ff;
+        --red: #dc2626;
+        --red-soft: #fff1f2;
+        --green: #12805c;
+        --yellow: #f59e0b;
+        --shadow: 0 22px 60px rgba(15, 23, 42, 0.12);
       }
 
       * { box-sizing: border-box; }
+
       body {
         margin: 0;
         color: var(--text);
-        background: linear-gradient(180deg, #f8fbfa 0%, #eef4f3 100%);
+        background:
+          linear-gradient(135deg, rgba(11, 86, 179, 0.12), transparent 28%),
+          linear-gradient(180deg, #f8fbff 0%, var(--bg) 100%);
         font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif;
       }
 
-      header { background: #fff; color: #082b70; }
-
-      .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px; }
-      .eyebrow {
-        display: inline-block;
-        margin: 0 0 12px;
-        border-radius: 999px;
-        background: #064aa3;
-        color: #fff;
-        padding: 8px 22px;
-        font-size: 16px;
-        font-weight: 900;
-        letter-spacing: .04em;
-      }
-      h1 { margin: 0; font-size: clamp(34px, 6vw, 70px); line-height: 1.04; letter-spacing: 0; }
-      .red { color: #d71920; }
-      .lead { max-width: 900px; margin: 14px 0 0; color: #1f2937; line-height: 1.8; font-weight: 800; }
-      .hero {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 420px;
-        gap: 28px;
-        align-items: center;
-      }
-      .hero-icons {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        text-align: center;
-      }
-      .hero-icon {
-        position: relative;
-        display: grid;
-        justify-items: center;
-        gap: 8px;
-        color: #0b4fa8;
-        font-weight: 900;
-      }
-      .circle {
-        display: grid;
-        width: 96px;
-        height: 96px;
-        place-items: center;
-        border-radius: 999px;
-        background: linear-gradient(135deg, #1768c8, #0b3c9a);
-        color: #fff;
-        font-size: 46px;
-        box-shadow: 0 12px 24px rgba(11, 60, 154, .2);
-      }
-      .section-title {
-        display: inline-block;
-        margin: 0 0 14px;
-        border-radius: 14px 14px 14px 0;
-        background: #064aa3;
-        color: #fff;
-        padding: 8px 24px;
-        font-size: 20px;
-        font-weight: 900;
-      }
-      .boxed {
-        border: 1.5px solid #1768c8;
-        border-radius: 8px;
-        background: #fff;
-        padding: 16px;
-      }
-      .flow {
-        grid-template-columns: repeat(4, minmax(0, 1fr));
-        align-items: stretch;
-      }
-      .flow-card {
-        position: relative;
-        min-height: 210px;
-        border-right: 1px solid #c7d7ef;
-        padding: 12px;
-      }
-      .flow-card:last-child { border-right: 0; }
-      .num {
-        display: inline-grid;
-        width: 28px;
-        height: 28px;
-        place-items: center;
-        border-radius: 999px;
-        background: #064aa3;
-        color: #fff;
-        font-weight: 900;
-      }
-      .flow-card h3 { margin: 0 0 8px; color: #064aa3; font-size: 18px; }
-      .mini-paper, .mini-screen, .mini-db, .mini-print {
-        margin-top: 14px;
-        border: 2px solid #cbd5e1;
-        background: #f8fafc;
-        min-height: 112px;
-      }
-      .mini-paper table { height: 112px; }
-      .mini-paper th, .mini-paper td { border: 1px solid #94a3b8; padding: 4px; font-size: 10px; }
-      .mini-screen { padding: 12px; box-shadow: inset 0 0 0 8px #334155; }
-      .mini-screen div { margin: 5px 0; border: 1px solid #cbd5e1; background: #fff; padding: 4px; font-size: 11px; }
-      .mini-db { display: grid; place-items: center; color: #064aa3; font-size: 52px; }
-      .mini-print { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; place-items: center; padding: 12px; color: #064aa3; font-size: 44px; }
-      .screen-image {
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: 14px;
-      }
-      .feature-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-      .feature {
-        min-height: 128px;
-        border: 1px solid #b8cbea;
-        border-radius: 8px;
-        background: #fff;
-        padding: 16px;
-      }
-      .feature-icon { color: #0b4fa8; font-size: 36px; font-weight: 900; }
-      .benefits { grid-template-columns: 1fr 1.15fr; }
-      .check-list { margin: 0; padding: 0; list-style: none; line-height: 2; font-weight: 800; }
-      .check-list li::before { content: "✓"; color: #15803d; font-weight: 900; margin-right: 8px; }
-      .contact {
-        display: grid;
-        grid-template-columns: auto 1fr auto;
-        gap: 18px;
-        align-items: center;
-        color: #062b70;
-      }
-      .contact-badge { background: #064aa3; color: #fff; padding: 14px 18px; border-radius: 6px; font-weight: 900; }
-      .phone { font-size: 32px; font-weight: 900; }
-      .grid { display: grid; gap: 18px; }
-      .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); margin-top: 22px; }
-      .main { grid-template-columns: minmax(300px, .9fr) minmax(360px, 1.1fr); align-items: start; }
-      .panel {
-        border: 1px solid var(--line);
-        background: rgba(255,255,255,.95);
-        box-shadow: 0 18px 42px rgba(13, 68, 61, .08);
-        padding: 20px;
-      }
-      h2 { margin: 0; font-size: 22px; }
-      .small { color: var(--muted); font-size: 13px; line-height: 1.7; font-weight: 700; }
-      .stat-value { margin: 8px 0 0; font-size: 40px; line-height: 1; font-weight: 900; }
-      label { display: grid; gap: 7px; color: #334155; font-size: 13px; font-weight: 800; }
-      input, select, textarea, button {
-        width: 100%;
-        border-radius: 0;
+      button,
+      input,
+      select,
+      textarea {
         font: inherit;
       }
-      input, select, textarea {
-        border: 1px solid #cbd5e1;
-        background: #fff;
-        padding: 12px;
-      }
-      textarea { min-height: 78px; resize: vertical; }
+
       button {
-        border: 0;
-        background: var(--brand);
-        color: #fff;
-        padding: 14px 16px;
-        font-weight: 900;
         cursor: pointer;
       }
-      .button-row { display: grid; grid-template-columns: 1fr auto auto; gap: 10px; margin-top: 16px; }
-      .sub-button { border: 1px solid #cbd5e1; background: #fff; color: #334155; white-space: nowrap; }
-      .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; }
-      .span-2 { grid-column: span 2; }
-      .errors { display: none; margin-top: 16px; border-left: 8px solid var(--danger); background: var(--warn-bg); padding: 14px; color: #991b1b; font-weight: 800; line-height: 1.7; }
-      .message { display: none; margin-top: 16px; background: #eaf6ff; padding: 14px; color: #075985; font-weight: 800; }
-      .search-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; }
-      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 16px; }
-      .card { border-left: 8px solid var(--brand); background: #ecfdf5; padding: 16px; }
-      .card strong { display: block; margin-top: 6px; font-size: 30px; line-height: 1.1; color: #0f172a; }
-      table { width: 100%; border-collapse: collapse; background: #fff; }
-      th, td { border: 1px solid #cbd5e1; padding: 10px; text-align: left; vertical-align: top; font-size: 13px; }
-      th { background: #f1f5f9; color: #334155; font-weight: 900; }
-      .report th, .report td { border: 2px solid #334155; }
-      .report caption { padding: 14px; font-size: 24px; font-weight: 900; }
-      .table-wrap { overflow-x: auto; margin-top: 16px; }
-      .danger { color: var(--danger); font-weight: 900; }
 
-      @media (max-width: 900px) {
-        .hero, .hero-icons, .stats, .main, .cards, .search-grid, .flow, .screen-image, .feature-grid, .benefits, .contact { grid-template-columns: 1fr; }
-        .form-grid { grid-template-columns: 1fr; }
-        .span-2 { grid-column: auto; }
-        .button-row { grid-template-columns: 1fr; }
-        .flow-card { border-right: 0; border-bottom: 1px solid #c7d7ef; }
-        .flow-card:last-child { border-bottom: 0; }
+      .hero {
+        border-bottom: 1px solid var(--line);
+        background: #fff;
+      }
+
+      .wrap {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 26px 22px;
+      }
+
+      .hero-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 380px;
+        gap: 28px;
+        align-items: end;
+      }
+
+      .eyebrow {
+        margin: 0 0 12px;
+        color: var(--blue);
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+      }
+
+      h1 {
+        margin: 0;
+        color: var(--blue-dark);
+        font-size: clamp(34px, 5vw, 64px);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      .lead {
+        max-width: 960px;
+        margin: 16px 0 0;
+        color: #334155;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.85;
+      }
+
+      .goal-card {
+        border: 1px solid #bcd1ee;
+        border-radius: 16px;
+        background: linear-gradient(180deg, #f8fbff, #edf5ff);
+        padding: 18px;
+        box-shadow: 0 12px 34px rgba(11, 86, 179, 0.14);
+      }
+
+      .goal-label {
+        margin: 0;
+        color: var(--blue);
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .goal-main {
+        margin: 8px 0 0;
+        color: var(--blue-dark);
+        font-size: 34px;
+        font-weight: 950;
+        line-height: 1.1;
+      }
+
+      .meta-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .meta {
+        border-left: 4px solid var(--blue);
+        background: var(--panel-soft);
+        padding: 12px;
+      }
+
+      .meta span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .meta strong {
+        display: block;
+        margin-top: 5px;
+        color: var(--blue-dark);
+        font-size: 15px;
+      }
+
+      .app {
+        display: grid;
+        grid-template-columns: 270px minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 18px 22px 30px;
+      }
+
+      .sidebar,
+      .panel,
+      .card {
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.95);
+        box-shadow: var(--shadow);
+      }
+
+      .sidebar {
+        position: sticky;
+        top: 16px;
+        padding: 16px;
+      }
+
+      .brand {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 12px;
+        align-items: center;
+        padding-bottom: 14px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        border-radius: 12px;
+        background: var(--blue);
+        color: #fff;
+        font-size: 24px;
+        font-weight: 900;
+      }
+
+      .brand-title {
+        margin: 0;
+        color: var(--blue-dark);
+        font-size: 15px;
+        font-weight: 950;
+      }
+
+      .brand-sub {
+        margin: 3px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .nav-section {
+        margin: 16px 0 8px;
+        color: var(--muted);
+        font-size: 11px;
+        font-weight: 900;
+        letter-spacing: 0.12em;
+      }
+
+      .nav-button {
+        display: grid;
+        grid-template-columns: 28px 1fr auto;
+        gap: 10px;
+        align-items: center;
+        width: 100%;
+        border: 0;
+        border-radius: 10px;
+        background: transparent;
+        color: #334155;
+        padding: 11px 10px;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 900;
+      }
+
+      .nav-button:hover,
+      .nav-button.active {
+        background: var(--blue-soft);
+        color: var(--blue-dark);
+      }
+
+      .nav-button.active {
+        box-shadow: inset 4px 0 0 var(--blue);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+        border-radius: 999px;
+        background: #edf2f7;
+        color: #475569;
+        padding: 3px 7px;
+        font-size: 11px;
+        font-weight: 900;
+      }
+
+      .badge.red {
+        background: var(--red-soft);
+        color: var(--red);
+      }
+
+      .content {
+        display: grid;
+        gap: 18px;
+      }
+
+      .topbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        border: 1px solid var(--line);
+        background: #fff;
+        padding: 14px 16px;
+        box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+      }
+
+      .topbar h2 {
+        margin: 0;
+        color: var(--blue-dark);
+        font-size: 22px;
+      }
+
+      .topbar p {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .action-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .primary,
+      .secondary,
+      .danger-button {
+        border: 0;
+        border-radius: 9px;
+        padding: 11px 14px;
+        font-size: 13px;
+        font-weight: 950;
+      }
+
+      .primary {
+        background: var(--blue);
+        color: #fff;
+      }
+
+      .secondary {
+        border: 1px solid #bdd0eb;
+        background: #fff;
+        color: var(--blue-dark);
+      }
+
+      .danger-button {
+        background: var(--red-soft);
+        color: var(--red);
+      }
+
+      .view {
+        display: none;
+      }
+
+      .view.active {
+        display: grid;
+        gap: 18px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 14px;
+      }
+
+      .stats {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .stat {
+        border-top: 6px solid var(--blue);
+        background: #fff;
+        padding: 16px;
+      }
+
+      .stat.red {
+        border-color: var(--red);
+      }
+
+      .stat.green {
+        border-color: var(--green);
+      }
+
+      .stat.yellow {
+        border-color: var(--yellow);
+      }
+
+      .stat p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .stat strong {
+        display: block;
+        margin-top: 8px;
+        color: #0f172a;
+        font-size: 32px;
+        line-height: 1;
+      }
+
+      .stat span {
+        display: block;
+        margin-top: 8px;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .flow {
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+      }
+
+      .flow-step {
+        position: relative;
+        min-height: 118px;
+        border: 1px solid var(--line);
+        background: #fff;
+        padding: 14px;
+      }
+
+      .flow-step.done {
+        border-color: #9ad8c4;
+        background: #f0fdf8;
+      }
+
+      .flow-step.alert {
+        border-color: #fecaca;
+        background: #fff5f5;
+      }
+
+      .flow-step b {
+        display: grid;
+        width: 30px;
+        height: 30px;
+        place-items: center;
+        border-radius: 999px;
+        background: var(--blue);
+        color: #fff;
+      }
+
+      .flow-step h3 {
+        margin: 12px 0 6px;
+        color: var(--blue-dark);
+        font-size: 15px;
+      }
+
+      .flow-step p {
+        margin: 0;
+        color: #475569;
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1.6;
+      }
+
+      .two-col {
+        grid-template-columns: minmax(360px, 0.9fr) minmax(0, 1.1fr);
+      }
+
+      .three-col {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .panel {
+        padding: 18px;
+      }
+
+      .panel-title {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .panel h3 {
+        margin: 0;
+        color: var(--blue-dark);
+        font-size: 19px;
+      }
+
+      .panel .hint {
+        margin: 5px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+        line-height: 1.6;
+      }
+
+      .form-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      label {
+        display: grid;
+        gap: 6px;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      input,
+      select,
+      textarea {
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 8px;
+        background: #fff;
+        padding: 11px 12px;
+        color: #0f172a;
+      }
+
+      textarea {
+        min-height: 82px;
+        resize: vertical;
+      }
+
+      .span-2 {
+        grid-column: span 2;
+      }
+
+      .notice {
+        display: none;
+        border-left: 6px solid var(--blue);
+        background: var(--blue-soft);
+        padding: 12px;
+        color: var(--blue-dark);
+        font-size: 13px;
+        font-weight: 900;
+        line-height: 1.7;
+      }
+
+      .notice.error {
+        border-color: var(--red);
+        background: var(--red-soft);
+        color: #991b1b;
+      }
+
+      .search-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .current-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .assignment-card {
+        border-left: 7px solid var(--green);
+        background: #f0fdf8;
+        padding: 16px;
+      }
+
+      .assignment-card.alert {
+        border-color: var(--red);
+        background: #fff5f5;
+      }
+
+      .assignment-card small {
+        color: #047857;
+        font-weight: 900;
+      }
+
+      .assignment-card.alert small {
+        color: var(--red);
+      }
+
+      .assignment-card strong {
+        display: block;
+        margin: 8px 0;
+        color: #0f172a;
+        font-size: 30px;
+        line-height: 1;
+      }
+
+      .assignment-card p {
+        margin: 0;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.8;
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+      }
+
+      table {
+        width: 100%;
+        min-width: 780px;
+        border-collapse: collapse;
+        background: #fff;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line);
+        padding: 11px 12px;
+        text-align: left;
+        vertical-align: top;
+        font-size: 13px;
+      }
+
+      th {
+        background: #f1f6fd;
+        color: #334155;
+        font-size: 12px;
+        font-weight: 950;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .status-pill {
+        display: inline-flex;
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-size: 11px;
+        font-weight: 950;
+      }
+
+      .status-pill.ok {
+        background: #dcfce7;
+        color: #166534;
+      }
+
+      .status-pill.warn {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .status-pill.bad {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .paper {
+        border: 1px solid #94a3b8;
+        background: #fff;
+        padding: 18px;
+      }
+
+      .paper h3 {
+        text-align: center;
+      }
+
+      .paper table {
+        min-width: 880px;
+      }
+
+      .paper th,
+      .paper td {
+        border: 2px solid #334155;
+      }
+
+      .callout {
+        display: grid;
+        grid-template-columns: 54px 1fr;
+        gap: 12px;
+        align-items: center;
+        border: 1px solid #fecaca;
+        background: #fff7f7;
+        padding: 14px;
+      }
+
+      .callout-icon {
+        display: grid;
+        width: 54px;
+        height: 54px;
+        place-items: center;
+        border-radius: 999px;
+        background: var(--red);
+        color: #fff;
+        font-size: 26px;
+        font-weight: 900;
+      }
+
+      .callout h4,
+      .mini-card h4 {
+        margin: 0;
+        color: #0f172a;
+      }
+
+      .callout p,
+      .mini-card p {
+        margin: 5px 0 0;
+        color: #475569;
+        font-size: 13px;
+        font-weight: 800;
+        line-height: 1.7;
+      }
+
+      .mini-card {
+        border: 1px solid var(--line);
+        background: #fff;
+        padding: 16px;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      @media (max-width: 1080px) {
+        .hero-grid,
+        .app,
+        .two-col,
+        .stats,
+        .flow,
+        .three-col {
+          grid-template-columns: 1fr;
+        }
+
+        .sidebar {
+          position: static;
+        }
+
+        .nav-list {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 6px;
+        }
+      }
+
+      @media (max-width: 720px) {
+        .wrap,
+        .app {
+          padding-left: 14px;
+          padding-right: 14px;
+        }
+
+        .meta-grid,
+        .form-grid,
+        .search-grid,
+        .current-grid,
+        .nav-list {
+          grid-template-columns: 1fr;
+        }
+
+        .span-2 {
+          grid-column: auto;
+        }
+
+        .goal-main {
+          font-size: 28px;
+        }
       }
 
       @media print {
-        body { background: #fff; }
-        header, .no-print, .panel:not(.print-area), .promo { display: none !important; }
-        .wrap { max-width: none; padding: 0; }
-        .panel { border: 0; box-shadow: none; padding: 0; }
-        th, td { padding: 6px; font-size: 11px; }
+        body {
+          background: #fff;
+        }
+
+        .hero,
+        .sidebar,
+        .topbar,
+        .view:not(#reportsView),
+        .no-print {
+          display: none !important;
+        }
+
+        .app {
+          display: block;
+          padding: 0;
+        }
+
+        .panel,
+        .paper {
+          border: 0;
+          box-shadow: none;
+          padding: 0;
+        }
+
+        th,
+        td {
+          padding: 6px;
+          font-size: 11px;
+        }
       }
     </style>
   </head>
   <body>
-    <header>
-      <div class="wrap hero">
+    <header class="hero">
+      <div class="wrap hero-grid">
         <div>
-          <p class="eyebrow">紙の作業日報から、スピーディーで正確な管理へ</p>
-          <h1>コンテナ管理システムで<br><span class="red">記録・管理・帳票作成</span>がすべてラクに!</h1>
-          <p class="lead">設置・回収の記録を一元管理し、現在の設置状況や長期設置コンテナを自動でお知らせします。</p>
+          <p class="eyebrow">SYSTEM DEMO ／ 2026.08</p>
+          <h1>コンテナ管理システム</h1>
+          <p class="lead">
+            紙の作業日報から、設置・回収・交換・手積みの記録を入力し、現在設置、入力ミス確認、長期設置アラート、収集履歴、印刷帳票までをひとつにつなぐ操作デモです。
+          </p>
+          <div class="meta-grid">
+            <div class="meta"><span>対象</span><strong>産廃・建設会社さま</strong></div>
+            <div class="meta"><span>題材</span><strong>作業日報とコンテナ管理表</strong></div>
+            <div class="meta"><span>開発状況</span><strong>操作デモ版</strong></div>
+          </div>
         </div>
-        <div class="hero-icons">
-          <div class="hero-icon"><div class="circle">✎</div><span>紙に記入<br>今まで通りでOK</span></div>
-          <div class="hero-icon"><div class="circle">▣</div><span>入力するだけ<br>自動で反映・更新</span></div>
-          <div class="hero-icon"><div class="circle">▤</div><span>帳票も自動作成<br>印刷して提出</span></div>
+        <div class="goal-card">
+          <p class="goal-label">目標事務作業を</p>
+          <p class="goal-main">1日3時間<br>→ 30分へ</p>
+          <p class="lead" style="margin-top: 12px; font-size: 13px;">
+            同じ内容を何回も書く・転記する作業を、1回入力したら全部に反映する仕組みです。
+          </p>
         </div>
       </div>
     </header>
 
-    <main class="wrap grid">
-      <section class="promo">
-        <h2 class="section-title">システムの流れ</h2>
-        <div class="boxed grid flow">
-          <article class="flow-card">
-            <h3><span class="num">1</span> 紙に記入（ドライバー）</h3>
-            <p class="small">今まで通り、作業日報に記入するだけ</p>
-            <div class="mini-paper"><table><tr><th>会社名</th><th>設置</th><th>回収</th></tr><tr><td>○○建設</td><td>置1番</td><td>408</td></tr><tr><td>△△工業</td><td>215</td><td></td></tr></table></div>
-          </article>
-          <article class="flow-card">
-            <h3><span class="num">2</span> システムに入力（事務員）</h3>
-            <p class="small">必要な項目を入力するとシステムに自動反映</p>
-            <div class="mini-screen"><div>作業日 2026/8/21</div><div>会社名 ○○建設</div><div>回収 408番</div><div>設置 置1番</div></div>
-          </article>
-          <article class="flow-card">
-            <h3><span class="num">3</span> 自動で反映・更新</h3>
-            <p class="small">現在の設置状況データベースをリアルタイムで更新</p>
-            <div class="mini-db">▦</div>
-          </article>
-          <article class="flow-card">
-            <h3><span class="num">4</span> 帳票を自動作成・印刷</h3>
-            <p class="small">一覧表・作業履歴をワンクリックで出力</p>
-            <div class="mini-print"><span>Excel</span><span>PDF</span></div>
-          </article>
-        </div>
-      </section>
-
-      <section class="promo">
-        <h2 class="section-title">画面イメージ</h2>
-        <div class="boxed grid screen-image">
+    <main class="app">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">箱</div>
           <div>
-            <h3>① 現在の設置状況一覧</h3>
-            <p class="small">どこに何のコンテナがあるか一目で分かります。</p>
+            <p class="brand-title">container-manager DEMO</p>
+            <p class="brand-sub">紙日報から管理表・帳票まで</p>
           </div>
+        </div>
+
+        <p class="nav-section">作業メニュー</p>
+        <div class="nav-list">
+          <button class="nav-button active" data-view="dashboard"><span>▦</span><span>ダッシュボード</span><span class="badge">全体</span></button>
+          <button class="nav-button" data-view="input"><span>＋</span><span>日報入力</span><span class="badge">登録</span></button>
+          <button class="nav-button" data-view="current"><span>⌕</span><span>現在設置</span><span class="badge" id="navCurrentCount">0</span></button>
+          <button class="nav-button" data-view="alerts"><span>!</span><span>長期設置アラート</span><span class="badge red" id="navAlertCount">0</span></button>
+          <button class="nav-button" data-view="reports"><span>▤</span><span>帳票プレビュー</span><span class="badge">印刷</span></button>
+        </div>
+
+        <p class="nav-section">このデモでできること</p>
+        <div class="mini-card">
+          <h4>一度入力すれば連動</h4>
+          <p>設置・回収履歴、現在位置、長期設置一覧、帳票出力が自動更新されます。</p>
+        </div>
+      </aside>
+
+      <section class="content">
+        <div class="topbar">
           <div>
-            <h3>② 長期設置アラート</h3>
-            <p class="small">設置期間が長いコンテナを自動でお知らせします。</p>
+            <h2 id="viewTitle">ダッシュボード</h2>
+            <p id="viewDescription">コンテナ関係の状況を、最初の画面でまとめて確認します。</p>
           </div>
-          <div>
-            <h3>③ コンテナ番号から検索</h3>
-            <p class="small">番号だけで、現在の設置場所をすぐ確認できます。</p>
+          <div class="action-row no-print">
+            <button class="primary" data-jump="input">＋ 新規日報入力</button>
+            <button class="secondary" data-jump="reports">帳票を確認</button>
+            <button class="danger-button" id="resetButton">デモデータに戻す</button>
           </div>
         </div>
-      </section>
 
-      <section class="promo">
-        <h2 class="section-title">主な機能</h2>
-        <div class="grid feature-grid">
-          <article class="feature"><div class="feature-icon">☑</div><h3>入力ミスを自動チェック</h3><p class="small">存在しない番号や別のお客様に設置中の番号をエラー表示します。</p></article>
-          <article class="feature"><div class="feature-icon">⌕</div><h3>カゴも管理</h3><p class="small">番号のないカゴも、種類・設置先・設置日で管理できます。</p></article>
-          <article class="feature"><div class="feature-icon">▣</div><h3>設置期間の自動計算</h3><p class="small">設置日から経過日数を自動で計算し、アラート表示に連動します。</p></article>
-          <article class="feature"><div class="feature-icon">▤</div><h3>帳票をすぐに出力</h3><p class="small">日報・収集履歴・コンテナ一覧を印刷またはCSVで出力できます。</p></article>
-        </div>
-      </section>
-
-      <section class="promo grid benefits">
-        <div class="boxed">
-          <h2 class="section-title">導入のメリット</h2>
-          <ul class="check-list">
-            <li>事務作業の時間を大幅に削減</li>
-            <li>入力ミス・記録漏れを防ぎ、正確な管理を実現</li>
-            <li>長期設置コンテナを把握し、腐食・破損リスクを未然に防止</li>
-            <li>紙の転記作業ゼロで、事務員さんの負担も軽減</li>
-          </ul>
-        </div>
-        <div class="boxed contact">
-          <div class="contact-badge">お問い合わせ</div>
-          <div>
-            <h2>NSL相談所（Next Sales Lab）</h2>
-            <div class="phone">090-8100-1417</div>
-            <p class="small">asano@nextsaleslab.com</p>
+        <section class="view active" id="dashboardView">
+          <div class="grid stats">
+            <div class="panel stat"><p>現在設置中</p><strong id="statActive">0件</strong><span>コンテナ・カゴの合計</span></div>
+            <div class="panel stat red"><p>長期設置</p><strong id="statLong">0件</strong><span>90日以上を自動抽出</span></div>
+            <div class="panel stat green"><p>本日の入力</p><strong id="statToday">0件</strong><span>日報から登録済み</span></div>
+            <div class="panel stat yellow"><p>ミス防止</p><strong>自動</strong><span>二重設置・別会社回収を確認</span></div>
           </div>
-          <p class="small">まずはお気軽にご相談ください。お客様の業務に合わせて、最適なシステムをご提案します。</p>
-        </div>
-      </section>
 
-      <section class="grid stats no-print" id="stats"></section>
-
-      <section class="grid main no-print">
-        <form class="panel" id="reportForm">
-          <h2>作業日報入力</h2>
-          <p class="small">紙の日報から必要項目だけ入力します。</p>
-          <div class="grid form-grid">
-            <label>作業日<input type="date" name="workDate" required /></label>
-            <label>作業内容
-              <select name="workType">
-                <option>設置</option><option>回収</option><option>交換</option><option>手積み</option>
-              </select>
-            </label>
-            <label>お客様・会社名<input name="companyName" value="○○建設" required /></label>
-            <label>現場名<input name="siteName" value="同左" /></label>
-            <label>運搬者<input name="driverName" placeholder="例：高村さん" /></label>
-            <label>種類
-              <select name="assetType"><option>コンテナ</option><option>カゴ</option><option>手積み</option></select>
-            </label>
-            <label id="installWrap">設置コンテナ<select name="installAssetId"></select></label>
-            <label id="collectWrap">回収コンテナ<select name="collectAssetId"></select></label>
-            <label>数量・単位<input name="quantity" value="1基" placeholder="例：2.5m3、kg、本、1基" /></label>
-            <label class="span-2">備考<textarea name="note"></textarea></label>
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <h3>業務フロー</h3>
+                <p class="hint">紙の日報から帳票出力まで、コンテナ番号でつながります。</p>
+              </div>
+            </div>
+            <div class="grid flow">
+              <article class="flow-step done"><b>1</b><h3>紙に記入</h3><p>ドライバーさんは今まで通り作業日報へ記入。</p></article>
+              <article class="flow-step done"><b>2</b><h3>必要項目だけ入力</h3><p>事務員さんが会社名・番号・作業内容だけ登録。</p></article>
+              <article class="flow-step done"><b>3</b><h3>現在設置を更新</h3><p>回収済み、設置中、交換を自動で反映。</p></article>
+              <article class="flow-step alert"><b>4</b><h3>長期設置を通知</h3><p>3ヶ月以上などの条件で自動抽出。</p></article>
+              <article class="flow-step done"><b>5</b><h3>帳票を出力</h3><p>必要な時だけ印刷・CSV保存。</p></article>
+            </div>
           </div>
-          <div class="errors" id="errors"></div>
-          <div class="message" id="message"></div>
-          <div class="button-row">
-            <button type="submit">登録して管理表へ反映</button>
-            <button type="button" class="sub-button" id="resetButton">見本へ戻す</button>
-          </div>
-        </form>
 
-        <div class="grid">
-          <section class="panel">
-            <h2>今どこに何があるか</h2>
-            <p class="small">会社名またはコンテナ番号で一発検索できます。</p>
+          <div class="grid two-col">
+            <div class="panel">
+              <div class="panel-title">
+                <div>
+                  <h3>直近の作業日報</h3>
+                  <p class="hint">最新の入力内容です。</p>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead><tr><th>日付</th><th>会社名</th><th>作業</th><th>設置</th><th>回収</th></tr></thead>
+                  <tbody id="recentRows"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel">
+              <div class="panel-title">
+                <div>
+                  <h3>要確認アラート</h3>
+                  <p class="hint">長期設置や入力ミスにつながる項目を表示します。</p>
+                </div>
+              </div>
+              <div id="dashboardAlerts" class="grid"></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="inputView">
+          <div class="grid two-col">
+            <form class="panel" id="reportForm">
+              <div class="panel-title">
+                <div>
+                  <h3>作業日報入力</h3>
+                  <p class="hint">紙に書かれた内容から必要項目だけ入力します。</p>
+                </div>
+              </div>
+              <div class="grid form-grid">
+                <label>作業日<input type="date" name="workDate" required /></label>
+                <label>作業内容
+                  <select name="workType">
+                    <option>設置</option>
+                    <option>回収</option>
+                    <option>交換</option>
+                    <option>手積み</option>
+                  </select>
+                </label>
+                <label>お客様・会社名<input name="companyName" value="○○建設" required /></label>
+                <label>現場名<input name="siteName" value="同左" /></label>
+                <label>運搬者<input name="driverName" placeholder="例：高村さん" /></label>
+                <label>種類
+                  <select name="assetType">
+                    <option>コンテナ</option>
+                    <option>カゴ</option>
+                    <option>手積み</option>
+                  </select>
+                </label>
+                <label id="installWrap">設置コンテナ<select name="installAssetId"></select></label>
+                <label id="collectWrap">回収コンテナ<select name="collectAssetId"></select></label>
+                <label>数量・単位<input name="quantity" value="1基" placeholder="例：2.5m3、kg、本、1基" /></label>
+                <label class="span-2">備考<textarea name="note" placeholder="必要な場合のみ入力"></textarea></label>
+              </div>
+              <div class="notice error" id="errors"></div>
+              <div class="notice" id="message"></div>
+              <div class="action-row" style="margin-top: 14px;">
+                <button class="primary" type="submit">登録して自動反映</button>
+                <button class="secondary" type="button" id="sampleMistake">408番のミス例を入れる</button>
+              </div>
+            </form>
+
+            <div class="panel">
+              <div class="panel-title">
+                <div>
+                  <h3>入力後に自動で変わるもの</h3>
+                  <p class="hint">登録ボタンを押すと、以下が同時に更新されます。</p>
+                </div>
+              </div>
+              <div class="grid three-col">
+                <article class="mini-card"><h4>現在設置</h4><p>会社名とコンテナ番号の紐付けが更新されます。</p></article>
+                <article class="mini-card"><h4>チェック</h4><p>別会社設置中、回収済み、二重設置を自動判定します。</p></article>
+                <article class="mini-card"><h4>帳票</h4><p>収集履歴と印刷用一覧へそのまま反映します。</p></article>
+              </div>
+              <div class="callout" style="margin-top: 14px;">
+                <div class="callout-icon">!</div>
+                <div>
+                  <h4>入力ミスの例</h4>
+                  <p>会社名を「○○建設」、回収コンテナを「210番」にすると、210番は別会社に設置中のためエラー表示されます。</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="currentView">
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <h3>現在の設置状況</h3>
+                <p class="hint">会社名を押す、またはコンテナ番号で検索して、今どこに何があるか確認できます。</p>
+              </div>
+            </div>
             <div class="grid search-grid">
               <label>会社名で検索<input id="companySearch" value="○○建設" /></label>
-              <label>番号で検索<input id="assetSearch" placeholder="例：408番" /></label>
+              <label>コンテナ番号で検索<input id="assetSearch" placeholder="例：408番" /></label>
             </div>
-            <div class="grid cards" id="currentCards"></div>
-          </section>
+            <div class="grid current-grid" id="currentCards" style="margin-top: 14px;"></div>
+          </div>
 
-          <section class="panel">
-            <h2>設置期間が長い順</h2>
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <h3>設置一覧</h3>
+                <p class="hint">全件を表で確認できます。</p>
+              </div>
+            </div>
             <div class="table-wrap">
               <table>
-                <thead><tr><th>経過</th><th>番号</th><th>会社名</th><th>現場名</th><th>設置日</th></tr></thead>
+                <thead><tr><th>状態</th><th>番号・種類</th><th>会社名</th><th>現場名</th><th>設置日</th><th>経過</th></tr></thead>
+                <tbody id="assignmentRows"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" id="alertsView">
+          <div class="panel">
+            <div class="panel-title">
+              <div>
+                <h3>長期設置コンテナアラート</h3>
+                <p class="hint">サビ・腐食対策として、設置期間が長い順に表示します。</p>
+              </div>
+            </div>
+            <div class="grid stats" id="thresholdStats"></div>
+          </div>
+          <div class="panel">
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>優先</th><th>経過日数</th><th>番号</th><th>種類</th><th>会社名</th><th>現場名</th><th>設置日</th></tr></thead>
                 <tbody id="longTermRows"></tbody>
               </table>
             </div>
-          </section>
-        </div>
-      </section>
-
-      <section class="panel print-area">
-        <div class="no-print" style="display:flex; gap:10px; justify-content:space-between; align-items:start; flex-wrap:wrap;">
-          <div><h2>帳票出力</h2><p class="small">印刷、PDF保存、Excel用CSV出力ができます。</p></div>
-          <div style="display:flex; gap:10px;">
-            <button class="sub-button" type="button" onclick="window.print()">印刷/PDF</button>
-            <button class="sub-button" type="button" id="csvButton">Excel用CSV</button>
           </div>
-        </div>
-        <div class="table-wrap">
-          <table class="report">
-            <caption>収集履歴</caption>
-            <thead><tr><th>収集年月日</th><th>現場名（工事件名）及び住所</th><th>運搬者</th><th>設置</th><th>回収</th><th>品目、数量及び搬入先処理場</th><th>備考</th></tr></thead>
-            <tbody id="reportRows"></tbody>
-          </table>
-        </div>
+        </section>
+
+        <section class="view" id="reportsView">
+          <div class="panel">
+            <div class="panel-title no-print">
+              <div>
+                <h3>帳票プレビュー</h3>
+                <p class="hint">現場で使っている収集履歴に近い形式で、印刷・CSV出力できます。</p>
+              </div>
+              <div class="action-row">
+                <button class="primary" id="printButton">印刷/PDF</button>
+                <button class="secondary" id="csvButton">Excel用CSV</button>
+              </div>
+            </div>
+            <div class="paper">
+              <h3>収集履歴</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>収集年月日</th>
+                      <th>現場名（工事件名）及び住所</th>
+                      <th>運搬者</th>
+                      <th>設置</th>
+                      <th>回収</th>
+                      <th>品目、数量及び搬入先処理場</th>
+                      <th>備考</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportRows"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
       </section>
     </main>
 
@@ -396,74 +1025,214 @@
 
       const defaults = {
         thresholds: [
-          { id: 'three', label: '3ヶ月以上', days: 90 },
-          { id: 'six', label: '6ヶ月以上', days: 180 },
-          { id: 'year', label: '1年以上', days: 365 }
+          { id: 'three-months', label: '3ヶ月以上', days: 90 },
+          { id: 'six-months', label: '6ヶ月以上', days: 180 },
+          { id: 'one-year', label: '1年以上', days: 365 }
         ],
         assignments: [
           { id: 'assign-oki-1', assetId: 'container-oki-1', assetLabel: '置1番', assetType: 'コンテナ', sizeLabel: '2.5m3', companyName: '○○建設', siteName: '同左', installedOn: '2026-08-21', quantity: '1基' },
           { id: 'assign-210', assetId: 'container-210', assetLabel: '210番', assetType: 'コンテナ', sizeLabel: '5.5m3', companyName: 'ダイワプラスモア', siteName: '北関東営業所', installedOn: '2026-07-18', quantity: '1基' },
-          { id: 'assign-basket-flex', assetId: 'basket-flex', assetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', companyName: '市村板金', siteName: '事務所', installedOn: '2026-07-27', quantity: '2袋' },
-          { id: 'assign-222', assetId: 'container-222', assetLabel: '222番', assetType: 'コンテナ', sizeLabel: '4.5m3', companyName: '資材置場', siteName: '資材置場', installedOn: '2026-03-18', quantity: '1基' }
+          { id: 'assign-206', assetId: 'container-206', assetLabel: '206番', assetType: 'コンテナ', sizeLabel: '6m3', companyName: '大橋技建', siteName: 'ハウス食品', installedOn: '2026-02-12', quantity: '1基' },
+          { id: 'assign-215', assetId: 'container-215', assetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', companyName: '開発株式会社', siteName: '栃木市 大橋邸', installedOn: '2026-03-05', quantity: '1基' },
+          { id: 'assign-basket-flex', assetId: 'basket-flex', assetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', companyName: '市村板金', siteName: '事務所', installedOn: '2026-07-27', quantity: '2袋' }
         ],
         reports: [
           { id: 'report-001', workDate: '2026-08-21', companyName: '○○建設', siteName: '同左', driverName: '事務入力', workType: '交換', installAssetId: 'container-oki-1', installAssetLabel: '置1番', collectAssetId: 'container-408', collectAssetLabel: '408番', assetType: 'コンテナ', sizeLabel: '2.5m3', quantity: '1基', note: '紙日報から登録した見本' },
           { id: 'report-002', workDate: '2026-07-29', companyName: '菜穂電気', siteName: '作業場', driverName: '菜穂さん', workType: '交換', installAssetId: 'container-210', installAssetLabel: '210番', collectAssetId: 'container-215', collectAssetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', quantity: '1基' },
-          { id: 'report-003', workDate: '2026-07-27', companyName: '市村板金', siteName: '事務所', driverName: '事務入力', workType: '設置', installAssetId: 'basket-flex', installAssetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', quantity: '2袋' }
+          { id: 'report-003', workDate: '2026-07-27', companyName: '市村板金', siteName: '事務所', driverName: '事務入力', workType: '設置', installAssetId: 'basket-flex', installAssetLabel: 'カゴ・フレコン', assetType: 'カゴ', sizeLabel: 'フレコン', quantity: '2袋' },
+          { id: 'report-004', workDate: '2026-03-05', companyName: '開発株式会社', siteName: '栃木市 大橋邸', driverName: '事務入力', workType: '設置', installAssetId: 'container-215', installAssetLabel: '215番', assetType: 'コンテナ', sizeLabel: '5.5m3', quantity: '1基' }
         ]
       };
 
-      const storeKey = 'genba-container-management-pages-v1';
+      const storeKey = 'container-manager-demo-v2';
       const $ = (id) => document.getElementById(id);
       const todayIso = () => new Date().toISOString().slice(0, 10);
-      const fmt = (date) => {
+      const normalize = (text) => String(text || '').trim().toLowerCase().replace(/\s/g, '');
+      const copyDefaults = () => JSON.parse(JSON.stringify(defaults));
+      const assetById = (id) => assets.find((asset) => asset.id === id);
+      const getState = () => JSON.parse(localStorage.getItem(storeKey) || JSON.stringify(defaults));
+      const setState = (state) => localStorage.setItem(storeKey, JSON.stringify(state));
+
+      function formatDate(date) {
         if (!date) return '';
         const [year, month, day] = date.split('-');
         return `${year}/${Number(month)}/${Number(day)}`;
-      };
-      const norm = (text) => String(text || '').trim().toLowerCase().replace(/\s/g, '');
-      const getState = () => JSON.parse(localStorage.getItem(storeKey) || JSON.stringify(defaults));
-      const setState = (state) => localStorage.setItem(storeKey, JSON.stringify(state));
-      const assetById = (id) => assets.find((asset) => asset.id === id);
-      const daysFrom = (date) => Math.max(0, Math.floor((new Date(todayIso()) - new Date(date)) / 86400000));
+      }
+
+      function daysFrom(date) {
+        const base = new Date(todayIso() + 'T12:00:00');
+        const target = new Date(date + 'T12:00:00');
+        return Math.max(0, Math.floor((base - target) / 86400000));
+      }
+
+      function activeAssignments(state) {
+        return state.assignments.filter((assignment) => !assignment.collectedOn);
+      }
+
+      function longTermAssignments(state) {
+        return activeAssignments(state)
+          .map((assignment) => ({ ...assignment, elapsedDays: daysFrom(assignment.installedOn) }))
+          .sort((a, b) => b.elapsedDays - a.elapsedDays);
+      }
+
+      function showView(name) {
+        document.querySelectorAll('.view').forEach((view) => view.classList.remove('active'));
+        document.querySelectorAll('.nav-button').forEach((button) => button.classList.toggle('active', button.dataset.view === name));
+        $(`${name}View`).classList.add('active');
+        const titleMap = {
+          dashboard: ['ダッシュボード', 'コンテナ関係の状況を、最初の画面でまとめて確認します。'],
+          input: ['日報入力', '紙の日報から必要項目だけ入力し、管理表へ自動反映します。'],
+          current: ['現在設置', '会社名またはコンテナ番号で、今どこに何があるか確認します。'],
+          alerts: ['長期設置アラート', '設置期間が長いコンテナを優先順で確認します。'],
+          reports: ['帳票プレビュー', '現在使っている紙の帳票に近い形で出力します。']
+        };
+        $('viewTitle').textContent = titleMap[name][0];
+        $('viewDescription').textContent = titleMap[name][1];
+      }
 
       function fillAssetOptions() {
         const form = $('reportForm');
         const type = form.assetType.value;
         const html = '<option value="">選択してください</option>' + assets
           .filter((asset) => asset.assetType === type)
-          .map((asset) => `<option value="${asset.id}">${asset.label} / ${asset.sizeLabel}</option>`).join('');
+          .map((asset) => `<option value="${asset.id}">${asset.label} / ${asset.sizeLabel}</option>`)
+          .join('');
         form.installAssetId.innerHTML = html;
         form.collectAssetId.innerHTML = html;
         if (type === 'コンテナ') form.installAssetId.value = 'container-408';
         if (type === 'カゴ') form.installAssetId.value = 'basket-flex';
       }
 
-      function activeAssignments(state) {
-        return state.assignments.filter((item) => !item.collectedOn);
+      function renderStats(state) {
+        const active = activeAssignments(state);
+        const long = longTermAssignments(state);
+        const today = todayIso();
+        $('statActive').textContent = `${active.length}件`;
+        $('statLong').textContent = `${long.filter((item) => item.elapsedDays >= 90).length}件`;
+        $('statToday').textContent = `${state.reports.filter((report) => report.workDate === today).length}件`;
+        $('navCurrentCount').textContent = active.length;
+        $('navAlertCount').textContent = long.filter((item) => item.elapsedDays >= 90).length;
       }
 
-      function render() {
-        const state = getState();
+      function renderDashboard(state) {
+        $('recentRows').innerHTML = state.reports.slice(0, 6).map((report) => `
+          <tr>
+            <td>${formatDate(report.workDate)}</td>
+            <td>${report.companyName}</td>
+            <td><span class="status-pill ok">${report.workType}</span></td>
+            <td>${report.installAssetLabel || ''}</td>
+            <td>${report.collectAssetLabel || ''}</td>
+          </tr>
+        `).join('');
+
+        const alerts = longTermAssignments(state).filter((assignment) => assignment.elapsedDays >= 90).slice(0, 4);
+        $('dashboardAlerts').innerHTML = alerts.length
+          ? alerts.map((assignment) => `
+              <div class="callout">
+                <div class="callout-icon">!</div>
+                <div>
+                  <h4>${assignment.assetLabel} ／ ${assignment.elapsedDays}日</h4>
+                  <p>${assignment.companyName}・${assignment.siteName}に設置中です。交換または現地確認の候補です。</p>
+                </div>
+              </div>
+            `).join('')
+          : '<div class="mini-card"><h4>長期設置はありません</h4><p>90日以上の設置コンテナはありません。</p></div>';
+      }
+
+      function renderCurrent(state) {
+        const companyQuery = normalize($('companySearch').value);
+        const assetQuery = normalize($('assetSearch').value);
         const active = activeAssignments(state);
-        const long = active.map((item) => ({ ...item, elapsedDays: daysFrom(item.installedOn) })).sort((a, b) => b.elapsedDays - a.elapsedDays);
-        $('stats').innerHTML = state.thresholds.map((threshold) => {
-          const count = long.filter((item) => item.elapsedDays >= threshold.days).length;
-          return `<div class="panel"><p class="small">長期設置コンテナ</p><p class="stat-value">${count}件</p><label>${threshold.label}<input type="number" min="1" data-threshold="${threshold.id}" value="${threshold.days}"></label></div>`;
+        const visible = assetQuery
+          ? active.filter((assignment) => normalize(assignment.assetLabel).includes(assetQuery))
+          : active.filter((assignment) => !companyQuery || normalize(assignment.companyName).includes(companyQuery));
+
+        $('currentCards').innerHTML = visible.length
+          ? visible.map((assignment) => {
+              const elapsed = daysFrom(assignment.installedOn);
+              const isAlert = elapsed >= 90;
+              return `
+                <article class="assignment-card ${isAlert ? 'alert' : ''}">
+                  <small>${assignment.companyName}</small>
+                  <strong>${assignment.assetLabel}</strong>
+                  <p>設置日：${formatDate(assignment.installedOn)}<br>経過日数：${elapsed}日<br>種類：${assignment.sizeLabel} ${assignment.assetType}<br>現場名：${assignment.siteName}</p>
+                </article>
+              `;
+            }).join('')
+          : '<div class="mini-card"><h4>該当なし</h4><p>現在設置中のデータはありません。</p></div>';
+
+        $('assignmentRows').innerHTML = longTermAssignments(state).map((assignment) => {
+          const isAlert = assignment.elapsedDays >= 90;
+          return `
+            <tr>
+              <td><span class="status-pill ${isAlert ? 'bad' : 'ok'}">${isAlert ? '要確認' : '設置中'}</span></td>
+              <td>${assignment.assetLabel}<br><small>${assignment.sizeLabel} ${assignment.assetType}</small></td>
+              <td>${assignment.companyName}</td>
+              <td>${assignment.siteName}</td>
+              <td>${formatDate(assignment.installedOn)}</td>
+              <td>${assignment.elapsedDays}日</td>
+            </tr>
+          `;
+        }).join('');
+      }
+
+      function renderAlerts(state) {
+        const long = longTermAssignments(state);
+        $('thresholdStats').innerHTML = state.thresholds.map((threshold) => {
+          const count = long.filter((assignment) => assignment.elapsedDays >= threshold.days).length;
+          return `
+            <div class="panel stat red">
+              <p>${threshold.label}</p>
+              <strong>${count}件</strong>
+              <span>しきい値：${threshold.days}日</span>
+            </div>
+          `;
         }).join('');
 
-        const companyQuery = norm($('companySearch').value);
-        const assetQuery = norm($('assetSearch').value);
-        const current = assetQuery
-          ? active.filter((item) => norm(item.assetLabel).includes(assetQuery))
-          : active.filter((item) => !companyQuery || norm(item.companyName).includes(companyQuery));
-        $('currentCards').innerHTML = current.length ? current.map((item) => `
-          <article class="card"><span>${item.companyName}</span><strong>${item.assetLabel}</strong>
-          <p class="small">設置日：${fmt(item.installedOn)}<br>経過日数：${daysFrom(item.installedOn)}日<br>種類：${item.sizeLabel} ${item.assetType}<br>現場名：${item.siteName}</p></article>
-        `).join('') : '<p class="small">該当する現在設置データはありません。</p>';
+        $('longTermRows').innerHTML = long.map((assignment, index) => {
+          const level = assignment.elapsedDays >= 180 ? 'bad' : assignment.elapsedDays >= 90 ? 'warn' : 'ok';
+          return `
+            <tr>
+              <td><span class="status-pill ${level}">${index + 1}</span></td>
+              <td>${assignment.elapsedDays}日</td>
+              <td>${assignment.assetLabel}</td>
+              <td>${assignment.sizeLabel} ${assignment.assetType}</td>
+              <td>${assignment.companyName}</td>
+              <td>${assignment.siteName}</td>
+              <td>${formatDate(assignment.installedOn)}</td>
+            </tr>
+          `;
+        }).join('');
+      }
 
-        $('longTermRows').innerHTML = long.slice(0, 12).map((item) => `<tr><td class="danger">${item.elapsedDays}日</td><td>${item.assetLabel}</td><td>${item.companyName}</td><td>${item.siteName}</td><td>${fmt(item.installedOn)}</td></tr>`).join('');
-        $('reportRows').innerHTML = state.reports.map((item) => `<tr><td>${fmt(item.workDate)}</td><td><b>${item.companyName}</b><br>${item.siteName}</td><td>${item.driverName || ''}</td><td>${item.installAssetLabel || ''}</td><td>${item.collectAssetLabel || ''}</td><td>${item.sizeLabel} ${item.assetType} / ${item.quantity}</td><td>${item.note || ''}</td></tr>`).join('');
+      function renderReports(state) {
+        $('reportRows').innerHTML = state.reports.map((report) => `
+          <tr>
+            <td>${formatDate(report.workDate)}</td>
+            <td><strong>${report.companyName}</strong><br>${report.siteName}</td>
+            <td>${report.driverName || ''}</td>
+            <td>${report.installAssetLabel || ''}</td>
+            <td>${report.collectAssetLabel || ''}</td>
+            <td>${report.sizeLabel} ${report.assetType} / ${report.quantity}</td>
+            <td>${report.note || ''}</td>
+          </tr>
+        `).join('');
+      }
+
+      function renderAll() {
+        const state = getState();
+        renderStats(state);
+        renderDashboard(state);
+        renderCurrent(state);
+        renderAlerts(state);
+        renderReports(state);
+      }
+
+      function showNotice(id, messages) {
+        const el = $(id);
+        const list = Array.isArray(messages) ? messages : [messages];
+        el.innerHTML = list.map((message) => `<div>${message}</div>`).join('');
+        el.style.display = list.length ? 'block' : 'none';
       }
 
       function validate(form, state) {
@@ -475,45 +1244,58 @@
         if (!form.companyName.value.trim()) errors.push('お客様・会社名を入力してください。');
         if (form.workType.value !== '手積み' && !form.quantity.value.trim()) errors.push('数量・単位を入力してください。');
         if (form.workType.value === '手積み') return errors;
+
         if (needsInstall) {
           const installAsset = assetById(form.installAssetId.value);
-          const activeInstall = active.find((item) => item.assetId === form.installAssetId.value);
+          const activeInstall = active.find((assignment) => assignment.assetId === form.installAssetId.value);
           if (!installAsset) errors.push('設置するコンテナまたはカゴを選択してください。');
-          if (installAsset && installAsset.assetType === 'コンテナ' && activeInstall) errors.push(`${activeInstall.assetLabel}は現在、${activeInstall.companyName} / ${activeInstall.siteName}に設置中です。`);
+          if (installAsset && installAsset.assetType === 'コンテナ' && activeInstall) {
+            errors.push(`${activeInstall.assetLabel}は現在、${activeInstall.companyName} / ${activeInstall.siteName}に設置中です。`);
+          }
         }
+
         if (needsCollect) {
           const collectAsset = assetById(form.collectAssetId.value);
-          const activeCollect = active.find((item) => {
-            if (collectAsset && collectAsset.assetType === 'カゴ') return item.assetId === form.collectAssetId.value && norm(item.companyName) === norm(form.companyName.value);
-            return item.assetId === form.collectAssetId.value;
+          const activeCollect = active.find((assignment) => {
+            if (collectAsset && collectAsset.assetType === 'カゴ') {
+              return assignment.assetId === form.collectAssetId.value && normalize(assignment.companyName) === normalize(form.companyName.value);
+            }
+            return assignment.assetId === form.collectAssetId.value;
           });
           if (!collectAsset) errors.push('回収するコンテナまたはカゴを選択してください。');
-          else if (!activeCollect) errors.push(`${collectAsset.label}は現在設置中ではありません。存在しない番号、別会社のカゴ、または回収済みの可能性があります。`);
-          else if (norm(activeCollect.companyName) !== norm(form.companyName.value)) errors.push(`${activeCollect.assetLabel}は現在、別のお客様（${activeCollect.companyName} / ${activeCollect.siteName}）に設置中です。`);
+          else if (!activeCollect) {
+            errors.push(`${collectAsset.label}は現在設置中ではありません。存在しない番号、別会社のカゴ、または回収済みの可能性があります。`);
+          } else if (normalize(activeCollect.companyName) !== normalize(form.companyName.value)) {
+            errors.push(`${activeCollect.assetLabel}は現在、別のお客様（${activeCollect.companyName} / ${activeCollect.siteName}）に設置中です。`);
+          }
         }
-        if (form.workType.value === '交換' && form.installAssetId.value === form.collectAssetId.value) errors.push('交換では設置番号と回収番号を別にしてください。');
+
+        if (form.workType.value === '交換' && form.installAssetId.value === form.collectAssetId.value) {
+          errors.push('交換では設置番号と回収番号を別にしてください。');
+        }
         return errors;
       }
 
-      $('reportForm').addEventListener('submit', (event) => {
+      function submitReport(event) {
         event.preventDefault();
         const form = event.currentTarget;
         const state = getState();
         const errors = validate(form, state);
-        $('errors').style.display = errors.length ? 'block' : 'none';
-        $('errors').innerHTML = errors.map((error) => `<div>${error}</div>`).join('');
-        $('message').style.display = 'none';
+        showNotice('errors', errors);
+        showNotice('message', []);
         if (errors.length) return;
 
         const needsInstall = ['設置', '交換'].includes(form.workType.value);
         const needsCollect = ['回収', '交換'].includes(form.workType.value);
         const installAsset = assetById(form.installAssetId.value);
         const collectAsset = assetById(form.collectAssetId.value);
-        const active = activeAssignments(state);
-        const collectTarget = needsCollect ? active.find((item) => {
-          if (collectAsset && collectAsset.assetType === 'カゴ') return item.assetId === form.collectAssetId.value && norm(item.companyName) === norm(form.companyName.value);
-          return item.assetId === form.collectAssetId.value;
+        const collectTarget = needsCollect ? activeAssignments(state).find((assignment) => {
+          if (collectAsset && collectAsset.assetType === 'カゴ') {
+            return assignment.assetId === form.collectAssetId.value && normalize(assignment.companyName) === normalize(form.companyName.value);
+          }
+          return assignment.assetId === form.collectAssetId.value;
         }) : null;
+        const baseAsset = installAsset || collectAsset || { sizeLabel: form.assetType.value };
         const report = {
           id: `report-${Date.now()}`,
           workDate: form.workDate.value,
@@ -526,50 +1308,65 @@
           collectAssetId: needsCollect ? form.collectAssetId.value : '',
           collectAssetLabel: needsCollect && collectAsset ? collectAsset.label : '',
           assetType: form.assetType.value,
-          sizeLabel: (installAsset || collectAsset || { sizeLabel: form.assetType.value }).sizeLabel,
+          sizeLabel: baseAsset.sizeLabel,
           quantity: form.quantity.value.trim() || '1式',
           note: form.note.value.trim()
         };
-        state.assignments = state.assignments.map((item) => item.id === (collectTarget && collectTarget.id) ? { ...item, collectedOn: form.workDate.value } : item);
+
+        state.assignments = state.assignments.map((assignment) =>
+          collectTarget && assignment.id === collectTarget.id ? { ...assignment, collectedOn: form.workDate.value } : assignment
+        );
         if (needsInstall && installAsset) {
-          state.assignments.unshift({ id: `assign-${Date.now()}`, assetId: installAsset.id, assetLabel: installAsset.label, assetType: installAsset.assetType, sizeLabel: installAsset.sizeLabel, companyName: report.companyName, siteName: report.siteName, installedOn: report.workDate, quantity: report.quantity, note: report.note });
+          state.assignments.unshift({
+            id: `assign-${Date.now()}`,
+            assetId: installAsset.id,
+            assetLabel: installAsset.label,
+            assetType: installAsset.assetType,
+            sizeLabel: installAsset.sizeLabel,
+            companyName: report.companyName,
+            siteName: report.siteName,
+            installedOn: report.workDate,
+            quantity: report.quantity,
+            note: report.note
+          });
         }
         state.reports.unshift(report);
         setState(state);
         $('companySearch').value = report.companyName;
         $('assetSearch').value = report.installAssetLabel || report.collectAssetLabel || '';
-        $('message').textContent = `${report.companyName}の登録を反映しました。現在設置の一覧も更新済みです。`;
-        $('message').style.display = 'block';
-        render();
-      });
+        showNotice('message', `${report.companyName}の登録を反映しました。現在設置、長期設置、帳票プレビューも更新済みです。`);
+        renderAll();
+      }
 
-      $('reportForm').addEventListener('change', (event) => {
+      function applyWorkTypeDisplay() {
         const form = $('reportForm');
-        if (event.target.name === 'assetType') fillAssetOptions();
-        if (event.target.name === 'workType') {
-          const isHand = form.workType.value === '手積み';
-          form.assetType.value = isHand ? '手積み' : 'コンテナ';
-          form.assetType.disabled = isHand;
-          $('installWrap').style.display = ['設置', '交換'].includes(form.workType.value) && !isHand ? 'grid' : 'none';
-          $('collectWrap').style.display = ['回収', '交換'].includes(form.workType.value) && !isHand ? 'grid' : 'none';
-          fillAssetOptions();
+        const isHand = form.workType.value === '手積み';
+        form.assetType.disabled = isHand;
+        if (isHand) {
+          form.assetType.value = '手積み';
+        } else if (form.assetType.value === '手積み') {
+          form.assetType.value = 'コンテナ';
         }
-      });
+        $('installWrap').classList.toggle('hidden', isHand || !['設置', '交換'].includes(form.workType.value));
+        $('collectWrap').classList.toggle('hidden', isHand || !['回収', '交換'].includes(form.workType.value));
+        fillAssetOptions();
+      }
 
-      $('companySearch').addEventListener('input', render);
-      $('assetSearch').addEventListener('input', render);
-      $('stats').addEventListener('input', (event) => {
-        if (!event.target.dataset.threshold) return;
-        const state = getState();
-        state.thresholds = state.thresholds.map((item) => item.id === event.target.dataset.threshold ? { ...item, days: Number(event.target.value) || item.days } : item);
-        setState(state);
-        render();
-      });
-      $('resetButton').addEventListener('click', () => { setState(defaults); $('message').textContent = '見本データに戻しました。'; $('message').style.display = 'block'; render(); });
-      $('csvButton').addEventListener('click', () => {
+      function downloadCsv() {
         const state = getState();
         const headers = ['作業日', '会社名', '現場名', '運搬者', '作業内容', '設置番号', '回収番号', '種類', '数量', '備考'];
-        const rows = state.reports.map((r) => [fmt(r.workDate), r.companyName, r.siteName, r.driverName, r.workType, r.installAssetLabel || '', r.collectAssetLabel || '', `${r.sizeLabel} ${r.assetType}`, r.quantity, r.note || '']);
+        const rows = state.reports.map((report) => [
+          formatDate(report.workDate),
+          report.companyName,
+          report.siteName,
+          report.driverName,
+          report.workType,
+          report.installAssetLabel || '',
+          report.collectAssetLabel || '',
+          `${report.sizeLabel} ${report.assetType}`,
+          report.quantity,
+          report.note || ''
+        ]);
         const csv = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
         const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
         const link = document.createElement('a');
@@ -577,13 +1374,41 @@
         link.download = `コンテナ作業日報_${todayIso()}.csv`;
         link.click();
         URL.revokeObjectURL(url);
+      }
+
+      document.querySelectorAll('.nav-button').forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
+      document.querySelectorAll('[data-jump]').forEach((button) => button.addEventListener('click', () => showView(button.dataset.jump)));
+      $('reportForm').addEventListener('submit', submitReport);
+      $('reportForm').addEventListener('change', (event) => {
+        if (event.target.name === 'workType') applyWorkTypeDisplay();
+        if (event.target.name === 'assetType') fillAssetOptions();
+      });
+      $('companySearch').addEventListener('input', renderAll);
+      $('assetSearch').addEventListener('input', renderAll);
+      $('printButton').addEventListener('click', () => window.print());
+      $('csvButton').addEventListener('click', downloadCsv);
+      $('resetButton').addEventListener('click', () => {
+        setState(copyDefaults());
+        showNotice('message', []);
+        showNotice('errors', []);
+        renderAll();
+      });
+      $('sampleMistake').addEventListener('click', () => {
+        const form = $('reportForm');
+        form.workDate.value = todayIso();
+        form.workType.value = '回収';
+        form.assetType.value = 'コンテナ';
+        form.companyName.value = '○○建設';
+        form.siteName.value = '同左';
+        applyWorkTypeDisplay();
+        form.collectAssetId.value = 'container-210';
+        showNotice('message', 'ミス確認用の例を入力しました。「登録して自動反映」を押すと、別会社に設置中のエラーが出ます。');
       });
 
       $('reportForm').workDate.value = todayIso();
-      if (!localStorage.getItem(storeKey)) setState(defaults);
-      fillAssetOptions();
-      $('collectWrap').style.display = 'none';
-      render();
+      if (!localStorage.getItem(storeKey)) setState(copyDefaults());
+      applyWorkTypeDisplay();
+      renderAll();
     </script>
   </body>
 </html>
