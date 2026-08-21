@@ -346,52 +346,6 @@
         font-weight: 800;
       }
 
-      .flow {
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-      }
-
-      .flow-step {
-        position: relative;
-        min-height: 118px;
-        border: 1px solid var(--line);
-        background: #fff;
-        padding: 14px;
-      }
-
-      .flow-step.done {
-        border-color: #9ad8c4;
-        background: #f0fdf8;
-      }
-
-      .flow-step.alert {
-        border-color: #fecaca;
-        background: #fff5f5;
-      }
-
-      .flow-step b {
-        display: grid;
-        width: 30px;
-        height: 30px;
-        place-items: center;
-        border-radius: 999px;
-        background: var(--blue);
-        color: #fff;
-      }
-
-      .flow-step h3 {
-        margin: 12px 0 6px;
-        color: var(--blue-dark);
-        font-size: 15px;
-      }
-
-      .flow-step p {
-        margin: 0;
-        color: #475569;
-        font-size: 12px;
-        font-weight: 800;
-        line-height: 1.6;
-      }
-
       .two-col {
         grid-template-columns: minmax(360px, 0.9fr) minmax(0, 1.1fr);
       }
@@ -649,7 +603,6 @@
         .app,
         .two-col,
         .stats,
-        .flow,
         .three-col {
           grid-template-columns: 1fr;
         }
@@ -785,22 +738,6 @@
             <div class="panel stat red"><p>長期未回収</p><strong id="statLong">0件</strong><span>1年以上を別シート管理</span></div>
             <div class="panel stat green"><p>本日の入力</p><strong id="statToday">0件</strong><span>日報から登録済み</span></div>
             <div class="panel stat yellow"><p>ミス防止</p><strong>自動</strong><span>二重設置・別会社回収を確認</span></div>
-          </div>
-
-          <div class="panel">
-            <div class="panel-title">
-              <div>
-                <h3>業務フロー</h3>
-                <p class="hint">紙の日報から帳票出力まで、コンテナ番号でつながります。</p>
-              </div>
-            </div>
-            <div class="grid flow">
-              <article class="flow-step done"><b>1</b><h3>紙に記入</h3><p>ドライバーさんは今まで通り作業日報へ記入。</p></article>
-              <article class="flow-step done"><b>2</b><h3>必要項目だけ入力</h3><p>事務員さんが会社名・番号・作業内容だけ登録。</p></article>
-              <article class="flow-step done"><b>3</b><h3>現在設置を更新</h3><p>回収済み、設置中、交換を自動で反映。</p></article>
-              <article class="flow-step alert"><b>4</b><h3>長期未回収を分離</h3><p>設置から1年以上は専用シートで管理。</p></article>
-              <article class="flow-step done"><b>5</b><h3>帳票を出力</h3><p>必要な時だけ印刷・CSV保存。</p></article>
-            </div>
           </div>
 
           <div class="grid two-col">
