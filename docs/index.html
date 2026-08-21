@@ -434,7 +434,7 @@
       }
 
       .database-search {
-        grid-template-columns: 1.2fr 1fr 1fr;
+        grid-template-columns: 1fr 1fr;
       }
 
       .current-grid {
@@ -843,32 +843,27 @@
               </div>
             </div>
             <div class="grid database-search">
-              <label>キーワード検索<input id="databaseKeyword" placeholder="会社名・現場名・番号・処理場で検索" /></label>
-              <label>搬出事業者名<input id="databaseCompany" placeholder="例：大橋技建" /></label>
-              <label>コンテナ番号<input id="databaseContainer" placeholder="例：206番、カゴ" /></label>
+              <label>コンテナ番号入力<input id="databaseContainer" value="408" placeholder="例：408、206、カゴ" /></label>
+              <label>搬出業者名入力<input id="databaseCompany" value="○○建設" placeholder="例：大橋技建" /></label>
             </div>
             <div class="grid stats" style="margin-top: 14px;">
-              <div class="panel stat"><p>通常コンテナ管理表</p><strong id="dbContainerCount">0件</strong><span>設置から1年未満・回収済み</span></div>
-              <div class="panel stat green"><p>収集履歴</p><strong id="dbHistoryCount">0件</strong><span>作業日報の履歴</span></div>
+              <div class="panel stat"><p>コンテナ管理表</p><strong id="dbContainerCount">0件</strong><span>入力番号の直近1年分</span></div>
+              <div class="panel stat green"><p>収集履歴表</p><strong id="dbHistoryCount">0件</strong><span>入力業者の直近1年分</span></div>
               <div class="panel stat yellow"><p>検索対象会社</p><strong id="dbCompanyCount">0社</strong><span>搬出事業者名</span></div>
               <div class="panel stat red"><p>長期未回収</p><strong id="dbOpenCount">0件</strong><span>設置から1年以上</span></div>
             </div>
             <div class="action-row" style="margin-top: 14px;">
-              <label style="width: 140px;">対象年<input id="printYear" type="number" min="2000" max="2100" value="2026" /></label>
-              <button class="primary" id="printContainerSheets" type="button">コンテナ番号別 PDF/印刷</button>
-              <button class="secondary" id="csvContainerSheets" type="button">コンテナ番号別 Excel</button>
-              <button class="primary" id="printHistorySheets" type="button">搬出業者別 PDF/印刷</button>
-              <button class="secondary" id="csvHistorySheets" type="button">搬出業者別 Excel</button>
+              <button class="primary" id="printContainerSheets" type="button">コンテナ管理表 PDF/印刷</button>
+              <button class="primary" id="printHistorySheets" type="button">収集履歴表 PDF/印刷</button>
               <button class="danger-button" id="printLongSheet" type="button">長期未回収 PDF/印刷</button>
-              <button class="secondary" id="csvLongSheet" type="button">長期未回収 Excel</button>
             </div>
           </div>
 
           <div class="panel">
             <div class="panel-title">
               <div>
-                <h3>コンテナ管理表（通常管理）</h3>
-                <p class="hint">設置から1年未満、または回収済みのデータを通常管理します。</p>
+                <h3>コンテナ管理表プレビュー</h3>
+                <p class="hint">入力されたコンテナ番号の直近1年分を表示します。PDF印刷ボタンと連動します。</p>
               </div>
             </div>
             <div class="table-wrap">
@@ -917,8 +912,8 @@
           <div class="panel">
             <div class="panel-title">
               <div>
-                <h3>収集履歴</h3>
-                <p class="hint">搬出事業者名ごとの収集日・現場名・運搬車・設置/回収番号・品目数量・処理場・備考を管理します。</p>
+                <h3>収集履歴表プレビュー</h3>
+                <p class="hint">入力された搬出業者名の直近1年分を表示します。PDF印刷ボタンと連動します。</p>
               </div>
             </div>
             <div class="table-wrap">
@@ -997,25 +992,41 @@
             <div class="panel-title no-print">
               <div>
                 <h3>帳票プレビュー</h3>
-                <p class="hint">現場で使っている収集履歴に近い形式で、印刷・CSV出力できます。</p>
+                <p class="hint">データベース検索に入力したコンテナ番号・搬出業者名に連動して帳票を作成します。</p>
               </div>
               <div class="action-row">
-                <button class="primary" id="printButton">印刷/PDF</button>
-                <button class="secondary" id="csvButton">Excel用CSV</button>
+                <button class="primary" id="previewContainerButton">コンテナ管理表</button>
+                <button class="primary" id="previewHistoryButton">収集履歴表</button>
               </div>
             </div>
             <div class="paper">
-              <h3>収集履歴</h3>
+              <h3>コンテナ管理表プレビュー</h3>
               <div class="table-wrap">
                 <table>
                   <thead>
                     <tr>
-                      <th>収集年月日</th>
-                      <th>現場名（工事件名）及び住所</th>
+                      <th>NO</th>
+                      <th>設置日</th>
+                      <th>回収日</th>
+                      <th>搬出事業者名</th>
+                      <th>現場名</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reportContainerRows"></tbody>
+                </table>
+              </div>
+
+              <h3 style="margin-top: 24px;">収集履歴表プレビュー</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>NO</th>
+                      <th>収集日</th>
+                      <th>現場名</th>
                       <th>運搬車</th>
-                      <th>設置</th>
-                      <th>回収</th>
-                      <th>品目、数量及び搬入先処理場</th>
+                      <th>コンテナ番号（設置日・回収日）</th>
+                      <th>品目、数量（m³）及び搬入先処理場</th>
                       <th>備考</th>
                     </tr>
                   </thead>
@@ -1164,23 +1175,34 @@
 
       function databaseFilters() {
         return {
-          keyword: normalize($('databaseKeyword').value),
           company: normalize($('databaseCompany').value),
           container: normalize($('databaseContainer').value)
         };
       }
 
-      function matchesDatabase(row, filters) {
-        const text = normalize(row.searchText);
-        const company = normalize(row.companyName);
+      function matchesContainerNumber(row, filters) {
+        if (!filters.container) return false;
         const container = normalize(row.containerNumber || row.containerText || '');
-        return (!filters.keyword || text.includes(filters.keyword)) &&
-          (!filters.company || company.includes(filters.company)) &&
-          (!filters.container || container.includes(filters.container));
+        const text = normalize(row.searchText);
+        return container.includes(filters.container) || text.includes(filters.container);
+      }
+
+      function matchesCompanyName(row, filters) {
+        if (!filters.company) return false;
+        return normalize(row.companyName).includes(filters.company);
       }
 
       function isLongUncollected(row) {
         return !row.collectedOn && daysFrom(row.installedOn) >= 365;
+      }
+
+      function inRecentYear(date) {
+        if (!date) return false;
+        const target = new Date(`${date}T12:00:00`);
+        const end = new Date(`${todayIso()}T12:00:00`);
+        const start = new Date(end);
+        start.setFullYear(start.getFullYear() - 1);
+        return target >= start && target <= end;
       }
 
       function tableHtml(title, headers, rows) {
@@ -1220,41 +1242,6 @@
         win.document.write(html);
         win.document.close();
         win.focus();
-      }
-
-      function downloadCsvFile(filename, sections) {
-        const lines = [];
-        sections.forEach((section) => {
-          lines.push(section.title);
-          lines.push(section.headers.join(','));
-          section.rows.forEach((row) => {
-            lines.push(row.map((cell) => `"${String(cell || '').replace(/"/g, '""')}"`).join(','));
-          });
-          lines.push('');
-        });
-        const url = URL.createObjectURL(new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' }));
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-
-      function selectedPrintYear() {
-        return Number($('printYear').value) || new Date().getFullYear();
-      }
-
-      function dateInYear(date, year) {
-        return Boolean(date && String(date).startsWith(`${year}-`));
-      }
-
-      function groupRows(rows, keyFn) {
-        return rows.reduce((groups, row) => {
-          const key = keyFn(row) || '未分類';
-          if (!groups[key]) groups[key] = [];
-          groups[key].push(row);
-          return groups;
-        }, {});
       }
 
       function printGroupedA4(title, sheets, orientation) {
@@ -1311,15 +1298,17 @@
       function currentDatabaseRows() {
         const state = getState();
         const filters = databaseFilters();
-        const allContainerRows = buildContainerDatabase(state).filter((row) => matchesDatabase(row, filters));
+        const allRows = buildContainerDatabase(state);
+        const allContainerRows = allRows.filter((row) => matchesContainerNumber(row, filters));
         const normalContainerRows = allContainerRows.filter((row) => !isLongUncollected(row));
-        const longRows = allContainerRows.filter((row) => isLongUncollected(row));
+        const longRows = allRows.filter((row) => isLongUncollected(row));
         const longLabels = new Set(longRows.map((row) => `${row.containerNumber}番`));
         const historyRows = buildHistoryDatabase(state).filter((row) => {
           const linkedToLongOpen = longLabels.has(row.installAssetLabel) && !row.collectAssetLabel;
-          return !linkedToLongOpen && matchesDatabase(row, filters);
+          return !linkedToLongOpen && matchesCompanyName(row, filters) && inRecentYear(row.collectedOn);
         });
-        return { normalContainerRows, longRows, historyRows };
+        const recentContainerRows = normalContainerRows.filter((row) => inRecentYear(row.installedOn) || inRecentYear(row.collectedOn));
+        return { normalContainerRows: recentContainerRows, longRows, historyRows };
       }
 
       function showView(name) {
@@ -1454,15 +1443,7 @@
       }
 
       function renderDatabase(state) {
-        const filters = databaseFilters();
-        const allContainerRows = buildContainerDatabase(state).filter((row) => matchesDatabase(row, filters));
-        const containerRows = allContainerRows.filter((row) => !isLongUncollected(row));
-        const longRows = allContainerRows.filter((row) => isLongUncollected(row));
-        const longLabels = new Set(longRows.map((row) => `${row.containerNumber}番`));
-        const historyRows = buildHistoryDatabase(state).filter((row) => {
-          const linkedToLongOpen = longLabels.has(row.installAssetLabel) && !row.collectAssetLabel;
-          return !linkedToLongOpen && matchesDatabase(row, filters);
-        });
+        const { normalContainerRows: containerRows, longRows, historyRows } = currentDatabaseRows();
         const companies = new Set([...containerRows, ...historyRows, ...longRows].map((row) => row.companyName));
         $('dbContainerCount').textContent = `${containerRows.length}件`;
         $('dbHistoryCount').textContent = `${historyRows.length}件`;
@@ -1514,17 +1495,14 @@
       }
 
       function renderReports(state) {
-        $('reportRows').innerHTML = state.reports.map((report) => `
-          <tr>
-            <td>${formatDate(report.workDate)}</td>
-            <td><strong>${report.companyName}</strong><br>${report.siteName}</td>
-            <td>${report.driverName || ''}</td>
-            <td>${report.installAssetLabel || ''}</td>
-            <td>${report.collectAssetLabel || ''}</td>
-            <td>${report.sizeLabel} ${report.assetType} / ${report.quantity} / ${report.disposalSite || '未入力'}</td>
-            <td>${report.note || ''}</td>
-          </tr>
-        `).join('');
+        const containerSheet = containerNumberSheets()[0];
+        const historySheet = historyCompanySheets()[0];
+        $('reportContainerRows').innerHTML = containerSheet.rows.length
+          ? containerSheet.rows.map((row) => `<tr>${row.map((cell) => `<td>${cell || ''}</td>`).join('')}</tr>`).join('')
+          : '<tr><td colspan="5">入力されたコンテナ番号の直近1年分データはありません。</td></tr>';
+        $('reportRows').innerHTML = historySheet.rows.length
+          ? historySheet.rows.map((row) => `<tr>${row.map((cell) => `<td>${cell || ''}</td>`).join('')}</tr>`).join('')
+          : '<tr><td colspan="7">入力された搬出業者名の直近1年分データはありません。</td></tr>';
       }
 
       function renderAll() {
@@ -1663,62 +1641,33 @@
         fillAssetOptions();
       }
 
-      function downloadCsv() {
-        const state = getState();
-        const headers = ['作業日', '会社名', '現場名', '運搬車', '作業内容', '設置番号', '回収番号', '種類', '数量', '搬入先処理場', '備考'];
-        const rows = state.reports.map((report) => [
-          formatDate(report.workDate),
-          report.companyName,
-          report.siteName,
-          report.driverName,
-          report.workType,
-          report.installAssetLabel || '',
-          report.collectAssetLabel || '',
-          `${report.sizeLabel} ${report.assetType}`,
-          report.quantity,
-          report.disposalSite || '',
-          report.note || ''
-        ]);
-        const csv = [headers, ...rows].map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
-        const url = URL.createObjectURL(new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' }));
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `コンテナ作業日報_${todayIso()}.csv`;
-        link.click();
-        URL.revokeObjectURL(url);
-      }
-
       function containerNumberSheets() {
-        const year = selectedPrintYear();
         const { normalContainerRows } = currentDatabaseRows();
-        const rowsForYear = normalContainerRows.filter((row) => dateInYear(row.installedOn, year) || dateInYear(row.collectedOn, year));
-        const groups = groupRows(rowsForYear, (row) => row.containerNumber);
         const headers = ['NO', '設置日', '回収日', '搬出事業者名', '現場名'];
-        return Object.entries(groups).map(([containerNumber, rows]) => ({
+        const containerNumber = $('databaseContainer').value.trim() || '未入力';
+        return [{
           title: `コンテナ管理表 No.${containerNumber}`,
-          subtitle: `${year}年分 / A4 1枚`,
+          subtitle: '入力されたコンテナ番号の直近1年分 / A4 1枚',
           headers,
-          rows: rows.map((row) => [
+          rows: normalContainerRows.map((row) => [
             row.no,
             formatDate(row.installedOn),
             row.collectedOn ? formatDate(row.collectedOn) : '未回収',
             row.companyName,
             row.siteName
           ])
-        }));
+        }];
       }
 
       function historyCompanySheets() {
-        const year = selectedPrintYear();
         const { historyRows } = currentDatabaseRows();
-        const rowsForYear = historyRows.filter((row) => dateInYear(row.collectedOn, year));
-        const groups = groupRows(rowsForYear, (row) => row.companyName);
         const headers = ['NO', '収集日', '現場名', '運搬車', 'コンテナ番号（設置日・回収日）', '品目、数量（m³）及び搬入先処理場', '備考'];
-        return Object.entries(groups).map(([companyName, rows]) => ({
+        const companyName = $('databaseCompany').value.trim() || '未入力';
+        return [{
           title: `収集履歴 ${companyName}`,
-          subtitle: `${year}年分 / A4 1枚`,
+          subtitle: '入力された搬出業者名の直近1年分 / A4 1枚',
           headers,
-          rows: rows.map((row) => [
+          rows: historyRows.map((row) => [
             row.no,
             formatDate(row.collectedOn),
             row.siteName,
@@ -1727,29 +1676,7 @@
             row.itemText,
             row.note
           ])
-        }));
-      }
-
-      function containerNumberCsvSection() {
-        const headers = ['コンテナ番号', 'NO', '設置日', '回収日', '搬出事業者名', '現場名'];
-        return {
-          title: `コンテナ管理表（${selectedPrintYear()}年・コンテナ番号別）`,
-          headers,
-          rows: containerNumberSheets().flatMap((sheet) =>
-            sheet.rows.map((row) => [sheet.title.replace('コンテナ管理表 No.', ''), ...row])
-          )
-        };
-      }
-
-      function historyCompanyCsvSection() {
-        const headers = ['搬出業者名', 'NO', '収集日', '現場名', '運搬車', 'コンテナ番号（設置日・回収日）', '品目、数量（m³）及び搬入先処理場', '備考'];
-        return {
-          title: `収集履歴表（${selectedPrintYear()}年・搬出業者名別）`,
-          headers,
-          rows: historyCompanySheets().flatMap((sheet) =>
-            sheet.rows.map((row) => [sheet.title.replace('収集履歴 ', ''), ...row])
-          )
-        };
+        }];
       }
 
       function longSheetSection() {
@@ -1771,28 +1698,16 @@
       }
 
       function printContainerSheets() {
-        printGroupedA4(`コンテナ管理表 ${selectedPrintYear()}年`, containerNumberSheets(), 'portrait');
+        printGroupedA4('コンテナ管理表', containerNumberSheets(), 'portrait');
       }
 
       function printHistorySheets() {
-        printGroupedA4(`収集履歴表 ${selectedPrintYear()}年`, historyCompanySheets(), 'landscape');
+        printGroupedA4('収集履歴表', historyCompanySheets(), 'landscape');
       }
 
       function printLongSheet() {
         const section = longSheetSection();
         printSheets('長期未回収管理シート', [tableHtml(section.title, section.headers, section.rows)]);
-      }
-
-      function downloadContainerSheetsCsv() {
-        downloadCsvFile(`コンテナ管理表_番号別_${selectedPrintYear()}年.csv`, [containerNumberCsvSection()]);
-      }
-
-      function downloadHistorySheetsCsv() {
-        downloadCsvFile(`収集履歴表_搬出業者別_${selectedPrintYear()}年.csv`, [historyCompanyCsvSection()]);
-      }
-
-      function downloadLongSheetCsv() {
-        downloadCsvFile(`長期未回収管理シート_${todayIso()}.csv`, [longSheetSection()]);
       }
 
       document.querySelectorAll('.nav-button').forEach((button) => button.addEventListener('click', () => showView(button.dataset.view)));
@@ -1804,17 +1719,13 @@
       });
       $('companySearch').addEventListener('input', renderAll);
       $('assetSearch').addEventListener('input', renderAll);
-      $('databaseKeyword').addEventListener('input', renderAll);
       $('databaseCompany').addEventListener('input', renderAll);
       $('databaseContainer').addEventListener('input', renderAll);
       $('printContainerSheets').addEventListener('click', printContainerSheets);
-      $('csvContainerSheets').addEventListener('click', downloadContainerSheetsCsv);
       $('printHistorySheets').addEventListener('click', printHistorySheets);
-      $('csvHistorySheets').addEventListener('click', downloadHistorySheetsCsv);
       $('printLongSheet').addEventListener('click', printLongSheet);
-      $('csvLongSheet').addEventListener('click', downloadLongSheetCsv);
-      $('printButton').addEventListener('click', () => window.print());
-      $('csvButton').addEventListener('click', downloadCsv);
+      $('previewContainerButton').addEventListener('click', printContainerSheets);
+      $('previewHistoryButton').addEventListener('click', printHistorySheets);
       $('resetButton').addEventListener('click', () => {
         setState(copyDefaults());
         showNotice('message', []);
