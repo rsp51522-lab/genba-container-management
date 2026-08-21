@@ -917,8 +917,11 @@
               <div class="panel stat red"><p>長期未回収</p><strong id="dbOpenCount">0件</strong><span>設置から1年以上</span></div>
             </div>
             <div class="action-row" style="margin-top: 14px;">
-              <button class="primary" id="printNormalSheets" type="button">通常管理 PDF/印刷</button>
-              <button class="secondary" id="csvNormalSheets" type="button">通常管理 Excel</button>
+              <label style="width: 140px;">対象年<input id="printYear" type="number" min="2000" max="2100" value="2026" /></label>
+              <button class="primary" id="printContainerSheets" type="button">コンテナ番号別 PDF/印刷</button>
+              <button class="secondary" id="csvContainerSheets" type="button">コンテナ番号別 Excel</button>
+              <button class="primary" id="printHistorySheets" type="button">搬出業者別 PDF/印刷</button>
+              <button class="secondary" id="csvHistorySheets" type="button">搬出業者別 Excel</button>
               <button class="danger-button" id="printLongSheet" type="button">長期未回収 PDF/印刷</button>
               <button class="secondary" id="csvLongSheet" type="button">長期未回収 Excel</button>
             </div>
@@ -1298,6 +1301,74 @@
         link.download = filename;
         link.click();
         URL.revokeObjectURL(url);
+      }
+
+      function selectedPrintYear() {
+        return Number($('printYear').value) || new Date().getFullYear();
+      }
+
+      function dateInYear(date, year) {
+        return Boolean(date && String(date).startsWith(`${year}-`));
+      }
+
+      function groupRows(rows, keyFn) {
+        return rows.reduce((groups, row) => {
+          const key = keyFn(row) || '未分類';
+          if (!groups[key]) groups[key] = [];
+          groups[key].push(row);
+          return groups;
+        }, {});
+      }
+
+      function printGroupedA4(title, sheets, orientation) {
+        const pages = sheets.map((sheet) => {
+          const head = sheet.headers.map((header) => `<th>${header}</th>`).join('');
+          const body = sheet.rows.length
+            ? sheet.rows.map((row) => `<tr>${row.map((cell) => `<td>${cell || ''}</td>`).join('')}</tr>`).join('')
+            : `<tr><td colspan="${sheet.headers.length}">該当データはありません。</td></tr>`;
+          return `
+            <section class="sheet">
+              <div class="sheet-head">
+                <h2>${sheet.title}</h2>
+                <p>${sheet.subtitle || ''}</p>
+              </div>
+              <table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>
+            </section>
+          `;
+        }).join('');
+        const html = `
+          <!doctype html>
+          <html lang="ja">
+            <head>
+              <meta charset="utf-8">
+              <title>${title}</title>
+              <style>
+                @page { size: A4 ${orientation}; margin: 8mm; }
+                * { box-sizing: border-box; }
+                body { margin: 0; font-family: "Hiragino Sans", "Yu Gothic", "Meiryo", sans-serif; color: #111827; }
+                .toolbar { margin: 0 0 10px; }
+                .toolbar button { padding: 8px 12px; font-weight: 700; }
+                .sheet { page-break-after: always; height: ${orientation === 'landscape' ? '190mm' : '277mm'}; overflow: hidden; }
+                .sheet:last-child { page-break-after: auto; }
+                .sheet-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; border-bottom: 2px solid #111827; margin-bottom: 8px; padding-bottom: 6px; }
+                h2 { margin: 0; font-size: ${orientation === 'landscape' ? '18px' : '20px'}; }
+                p { margin: 0; color: #475569; font-size: 11px; font-weight: 700; }
+                table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+                th, td { border: 1.4px solid #334155; padding: ${orientation === 'landscape' ? '5px' : '6px'}; text-align: left; vertical-align: top; font-size: ${orientation === 'landscape' ? '9.5px' : '10.5px'}; line-height: 1.35; word-break: break-word; }
+                th { background: #eef4ff; font-weight: 900; }
+                @media print { .toolbar { display: none; } }
+              </style>
+            </head>
+            <body>
+              <div class="toolbar"><button onclick="window.print()">印刷/PDF保存</button></div>
+              ${pages}
+            </body>
+          </html>
+        `;
+        const win = window.open('', '_blank');
+        win.document.write(html);
+        win.document.close();
+        win.focus();
       }
 
       function currentDatabaseRows() {
@@ -1680,38 +1751,68 @@
         URL.revokeObjectURL(url);
       }
 
-      function normalSheetSections() {
-        const { normalContainerRows, historyRows } = currentDatabaseRows();
-        const containerHeaders = ['コンテナ番号', 'NO', '設置日', '回収日', '搬出事業者名', '現場名'];
-        const historyHeaders = ['搬出事業者名', 'NO', '収集日', '現場名', '運搬車', 'コンテナ番号（設置日・回収日）', '品目、数量（m³）及び搬入先処理場', '備考'];
-        return [
-          {
-            title: 'コンテナ管理表（通常管理：設置1年未満・回収済み）',
-            headers: containerHeaders,
-            rows: normalContainerRows.map((row) => [
-              row.containerNumber,
-              row.no,
-              formatDate(row.installedOn),
-              row.collectedOn ? formatDate(row.collectedOn) : '未回収',
-              row.companyName,
-              row.siteName
-            ])
-          },
-          {
-            title: '収集履歴',
-            headers: historyHeaders,
-            rows: historyRows.map((row) => [
-              row.companyName,
-              row.no,
-              formatDate(row.collectedOn),
-              row.siteName,
-              row.vehicleName,
-              row.containerText,
-              row.itemText,
-              row.note
-            ])
-          }
-        ];
+      function containerNumberSheets() {
+        const year = selectedPrintYear();
+        const { normalContainerRows } = currentDatabaseRows();
+        const rowsForYear = normalContainerRows.filter((row) => dateInYear(row.installedOn, year) || dateInYear(row.collectedOn, year));
+        const groups = groupRows(rowsForYear, (row) => row.containerNumber);
+        const headers = ['NO', '設置日', '回収日', '搬出事業者名', '現場名'];
+        return Object.entries(groups).map(([containerNumber, rows]) => ({
+          title: `コンテナ管理表 No.${containerNumber}`,
+          subtitle: `${year}年分 / A4 1枚`,
+          headers,
+          rows: rows.map((row) => [
+            row.no,
+            formatDate(row.installedOn),
+            row.collectedOn ? formatDate(row.collectedOn) : '未回収',
+            row.companyName,
+            row.siteName
+          ])
+        }));
+      }
+
+      function historyCompanySheets() {
+        const year = selectedPrintYear();
+        const { historyRows } = currentDatabaseRows();
+        const rowsForYear = historyRows.filter((row) => dateInYear(row.collectedOn, year));
+        const groups = groupRows(rowsForYear, (row) => row.companyName);
+        const headers = ['NO', '収集日', '現場名', '運搬車', 'コンテナ番号（設置日・回収日）', '品目、数量（m³）及び搬入先処理場', '備考'];
+        return Object.entries(groups).map(([companyName, rows]) => ({
+          title: `収集履歴 ${companyName}`,
+          subtitle: `${year}年分 / A4 1枚`,
+          headers,
+          rows: rows.map((row) => [
+            row.no,
+            formatDate(row.collectedOn),
+            row.siteName,
+            row.vehicleName,
+            row.containerText,
+            row.itemText,
+            row.note
+          ])
+        }));
+      }
+
+      function containerNumberCsvSection() {
+        const headers = ['コンテナ番号', 'NO', '設置日', '回収日', '搬出事業者名', '現場名'];
+        return {
+          title: `コンテナ管理表（${selectedPrintYear()}年・コンテナ番号別）`,
+          headers,
+          rows: containerNumberSheets().flatMap((sheet) =>
+            sheet.rows.map((row) => [sheet.title.replace('コンテナ管理表 No.', ''), ...row])
+          )
+        };
+      }
+
+      function historyCompanyCsvSection() {
+        const headers = ['搬出業者名', 'NO', '収集日', '現場名', '運搬車', 'コンテナ番号（設置日・回収日）', '品目、数量（m³）及び搬入先処理場', '備考'];
+        return {
+          title: `収集履歴表（${selectedPrintYear()}年・搬出業者名別）`,
+          headers,
+          rows: historyCompanySheets().flatMap((sheet) =>
+            sheet.rows.map((row) => [sheet.title.replace('収集履歴 ', ''), ...row])
+          )
+        };
       }
 
       function longSheetSection() {
@@ -1732,9 +1833,12 @@
         };
       }
 
-      function printNormalSheets() {
-        const sections = normalSheetSections();
-        printSheets('通常管理帳票', sections.map((section) => tableHtml(section.title, section.headers, section.rows)));
+      function printContainerSheets() {
+        printGroupedA4(`コンテナ管理表 ${selectedPrintYear()}年`, containerNumberSheets(), 'portrait');
+      }
+
+      function printHistorySheets() {
+        printGroupedA4(`収集履歴表 ${selectedPrintYear()}年`, historyCompanySheets(), 'landscape');
       }
 
       function printLongSheet() {
@@ -1742,8 +1846,12 @@
         printSheets('長期未回収管理シート', [tableHtml(section.title, section.headers, section.rows)]);
       }
 
-      function downloadNormalSheetsCsv() {
-        downloadCsvFile(`通常管理帳票_${todayIso()}.csv`, normalSheetSections());
+      function downloadContainerSheetsCsv() {
+        downloadCsvFile(`コンテナ管理表_番号別_${selectedPrintYear()}年.csv`, [containerNumberCsvSection()]);
+      }
+
+      function downloadHistorySheetsCsv() {
+        downloadCsvFile(`収集履歴表_搬出業者別_${selectedPrintYear()}年.csv`, [historyCompanyCsvSection()]);
       }
 
       function downloadLongSheetCsv() {
@@ -1762,8 +1870,10 @@
       $('databaseKeyword').addEventListener('input', renderAll);
       $('databaseCompany').addEventListener('input', renderAll);
       $('databaseContainer').addEventListener('input', renderAll);
-      $('printNormalSheets').addEventListener('click', printNormalSheets);
-      $('csvNormalSheets').addEventListener('click', downloadNormalSheetsCsv);
+      $('printContainerSheets').addEventListener('click', printContainerSheets);
+      $('csvContainerSheets').addEventListener('click', downloadContainerSheetsCsv);
+      $('printHistorySheets').addEventListener('click', printHistorySheets);
+      $('csvHistorySheets').addEventListener('click', downloadHistorySheetsCsv);
       $('printLongSheet').addEventListener('click', printLongSheet);
       $('csvLongSheet').addEventListener('click', downloadLongSheetCsv);
       $('printButton').addEventListener('click', () => window.print());
